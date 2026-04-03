@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Moon, Sun } from "lucide-react";
+import { RiGithubLine, RiMoonLine, RiSunLine } from "react-icons/ri";
 import type { CSSProperties, ReactNode } from "react";
 import type { FooterProps } from "@/types";
 
@@ -29,7 +29,7 @@ export default function Footer({ theme, onToggleTheme }: FooterProps) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 font-[family:var(--font-space-grotesk)] text-[12px] text-[var(--text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--text-primary)]"
         >
-          <ExternalLink size={16} strokeWidth={2} aria-hidden />
+          <RiGithubLine size={16} style={{ flexShrink: 0 }} aria-hidden />
           blxitze/aitk_hackathon
         </a>
       </div>
@@ -47,7 +47,7 @@ export default function Footer({ theme, onToggleTheme }: FooterProps) {
             onClick={() => {
               if (theme !== "dark") onToggleTheme();
             }}
-            icon={<Moon size={13} strokeWidth={2} aria-hidden />}
+            icon={<RiMoonLine size={13} style={{ flexShrink: 0 }} aria-hidden />}
             label="Тёмная"
           />
           <ThemePillButton
@@ -55,7 +55,7 @@ export default function Footer({ theme, onToggleTheme }: FooterProps) {
             onClick={() => {
               if (theme !== "light") onToggleTheme();
             }}
-            icon={<Sun size={13} strokeWidth={2} aria-hidden />}
+            icon={<RiSunLine size={13} style={{ flexShrink: 0 }} aria-hidden />}
             label="Светлая"
             activeScheme="light"
           />

@@ -11,7 +11,10 @@ import KPICard from "@/components/KPICard";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { fetchAnalysis, fetchMetrics } from "@/lib/api";
 import { translateSource } from "@/lib/utils";
-import { Circle } from "lucide-react";
+import {
+  RiCheckboxBlankCircleFill,
+  RiCheckboxBlankCircleLine,
+} from "react-icons/ri";
 import type {
   AIResponse,
   AiMode,
@@ -387,14 +390,23 @@ export default function Home() {
                   className="flex items-start gap-2 font-[family:var(--font-jetbrains-mono)] text-[13px] leading-snug"
                   style={{ color: insightAccentStyle.color }}
                 >
-                  <Circle
-                    size={16}
-                    className="mt-0.5 shrink-0"
-                    fill={metrics ? insightAccentStyle.color : "none"}
-                    stroke={insightAccentStyle.color}
-                    strokeWidth={metrics ? 0 : 2}
-                    aria-hidden
-                  />
+                  {metrics ? (
+                    <RiCheckboxBlankCircleFill
+                      size={16}
+                      color={insightAccentStyle.color}
+                      className="mt-0.5"
+                      style={{ flexShrink: 0 }}
+                      aria-hidden
+                    />
+                  ) : (
+                    <RiCheckboxBlankCircleLine
+                      size={16}
+                      color={insightAccentStyle.color}
+                      className="mt-0.5"
+                      style={{ flexShrink: 0 }}
+                      aria-hidden
+                    />
+                  )}
                   <span>
                     {aiData?.what_happening ??
                       (loadingMetrics ? ui.loading : ui.analyzing)}

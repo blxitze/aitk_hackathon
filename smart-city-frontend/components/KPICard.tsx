@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { RiArrowDownLine, RiArrowUpLine, RiSubtractLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { translateStatus } from "@/lib/utils";
@@ -112,11 +112,23 @@ export default function KPICard({
           aria-hidden
         >
           {trend === "up" ? (
-            <TrendingUp size={16} style={{ color: statusColor }} strokeWidth={2} />
+            <RiArrowUpLine
+              size={14}
+              color="var(--status-good)"
+              style={{ flexShrink: 0 }}
+            />
           ) : trend === "down" ? (
-            <TrendingDown size={16} style={{ color: statusColor }} strokeWidth={2} />
+            <RiArrowDownLine
+              size={14}
+              color="var(--status-crit)"
+              style={{ flexShrink: 0 }}
+            />
           ) : (
-            <Minus size={16} className="text-[var(--text-secondary)]" strokeWidth={2} />
+            <RiSubtractLine
+              size={14}
+              color="var(--text-muted)"
+              style={{ flexShrink: 0 }}
+            />
           )}
         </div>
       ) : null}

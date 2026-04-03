@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  AlertCircle,
-  Brain,
-  ChevronRight,
-  Cloud,
-  Monitor,
-  X,
-} from "lucide-react";
+  RiArrowRightSLine,
+  RiBrainLine,
+  RiCloudLine,
+  RiComputerLine,
+  RiCloseLine,
+  RiErrorWarningLine,
+} from "react-icons/ri";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
@@ -142,10 +142,10 @@ export default function AIInsight({
     >
       <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
         <h2 className="flex min-w-0 items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[var(--text-primary)]">
-          <Brain
+          <RiBrainLine
             size={18}
-            className="shrink-0 text-[var(--accent-violet)]"
-            strokeWidth={2}
+            color="var(--accent-violet)"
+            style={{ flexShrink: 0 }}
             aria-hidden
           />
           ИИ-анализ
@@ -162,7 +162,7 @@ export default function AIInsight({
                     : "bg-transparent text-[var(--text-muted)]"
                 }`}
               >
-                <Cloud size={12} strokeWidth={2} aria-hidden />
+                <RiCloudLine size={12} style={{ flexShrink: 0 }} aria-hidden />
                 GPT
               </button>
               <button
@@ -174,7 +174,7 @@ export default function AIInsight({
                     : "bg-transparent text-[var(--text-muted)]"
                 }`}
               >
-                <Monitor size={12} strokeWidth={2} aria-hidden />
+                <RiComputerLine size={12} style={{ flexShrink: 0 }} aria-hidden />
                 Local
               </button>
             </div>
@@ -188,7 +188,7 @@ export default function AIInsight({
             aria-label="Закрыть панель анализа"
             className="cursor-pointer rounded-[6px] p-1 text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
           >
-            <X size={16} strokeWidth={2} aria-hidden />
+            <RiCloseLine size={16} style={{ flexShrink: 0 }} aria-hidden />
           </button>
         </div>
       </div>
@@ -214,10 +214,11 @@ export default function AIInsight({
         ) : error ? (
           <div className="flex flex-1 flex-col">
             <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[var(--status-crit)]">
-              <AlertCircle
+              <RiErrorWarningLine
                 size={18}
-                className="mt-0.5 shrink-0 text-[var(--status-crit)]"
-                strokeWidth={2}
+                color="var(--status-crit)"
+                className="mt-0.5"
+                style={{ flexShrink: 0 }}
                 aria-hidden
               />
               Ошибка анализа ИИ
@@ -285,10 +286,11 @@ export default function AIInsight({
                       className="border-b border-[var(--border)] py-1.5 last:border-b-0"
                     >
                       <div className="flex gap-2 leading-[1.5]">
-                        <ChevronRight
+                        <RiArrowRightSLine
                           size={14}
-                          className="mt-0.5 shrink-0 text-[var(--accent-violet)]"
-                          strokeWidth={2}
+                          color="var(--accent-violet)"
+                          className="mt-0.5"
+                          style={{ flexShrink: 0 }}
                           aria-hidden
                         />
                         <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[var(--text-primary)]">

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, Building2, PanelRightClose } from "lucide-react";
+import { RiBrainLine, RiBuildingLine, RiLayoutRightLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import type { HeaderProps, UiLanguage } from "@/types";
 
@@ -66,10 +66,10 @@ export default function Header({
             aria-hidden
           />
           <div className="flex min-w-0 items-center gap-2">
-            <Building2
+            <RiBuildingLine
               size={15}
-              className="shrink-0 text-[var(--text-secondary)]"
-              strokeWidth={2}
+              color="var(--text-secondary)"
+              style={{ flexShrink: 0 }}
               aria-hidden
             />
             <span className="truncate font-[family:var(--font-space-grotesk)] text-[15px] font-semibold leading-none text-[var(--text-primary)]">
@@ -114,9 +114,13 @@ export default function Header({
             }
           >
             {aiPanelOpen ? (
-              <PanelRightClose size={14} strokeWidth={2} aria-hidden />
+              <RiLayoutRightLine
+                size={14}
+                style={{ flexShrink: 0 }}
+                aria-hidden
+              />
             ) : (
-              <Brain size={14} strokeWidth={2} aria-hidden />
+              <RiBrainLine size={14} style={{ flexShrink: 0 }} aria-hidden />
             )}
             <AnimatePresence mode="wait">
               <motion.span

@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, Wind } from "lucide-react";
+import { RiCarLine, RiWindyLine } from "react-icons/ri";
 import { useCallback, useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
@@ -277,10 +277,10 @@ export default function ChartSection({
     >
       <div className={cardClass}>
         <h3 className="mb-3 flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[var(--text-primary)]">
-          <Car
+          <RiCarLine
             size={18}
-            className="shrink-0 text-[var(--text-primary)]"
-            strokeWidth={2}
+            color="var(--text-primary)"
+            style={{ flexShrink: 0 }}
           />
           {L.transport}
         </h3>
@@ -355,10 +355,10 @@ export default function ChartSection({
 
       <div className={cardClass}>
         <h3 className="mb-3 flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[var(--text-primary)]">
-          <Wind
+          <RiWindyLine
             size={18}
-            className="shrink-0 text-[var(--text-primary)]"
-            strokeWidth={2}
+            color="var(--text-primary)"
+            style={{ flexShrink: 0 }}
           />
           {L.ecology}
         </h3>

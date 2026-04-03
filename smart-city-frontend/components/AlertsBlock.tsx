@@ -1,6 +1,11 @@
 "use client";
 
-import { AlertTriangle, Car, CheckCircle, Wind } from "lucide-react";
+import {
+  RiAlertLine,
+  RiCarLine,
+  RiCheckboxCircleLine,
+  RiWindyLine,
+} from "react-icons/ri";
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import {
@@ -58,19 +63,19 @@ function DomainIcon({
   const label = translateDomain(domain, language);
   if (domain === "transport") {
     return (
-      <Car
-        size={16}
-        className="shrink-0 text-[var(--text-primary)]"
-        strokeWidth={2}
+      <RiCarLine
+        size={15}
+        color="var(--accent-blue)"
+        style={{ flexShrink: 0 }}
         aria-label={label}
       />
     );
   }
   return (
-    <Wind
-      size={16}
-      className="shrink-0 text-[var(--text-primary)]"
-      strokeWidth={2}
+    <RiWindyLine
+      size={15}
+      color="var(--status-good)"
+      style={{ flexShrink: 0 }}
       aria-label={label}
     />
   );
@@ -88,10 +93,10 @@ export default function AlertsBlock({
   return (
     <div className="rounded-[12px] bg-[var(--bg-surface)] p-5">
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <AlertTriangle
+        <RiAlertLine
           size={18}
-          className="shrink-0 text-[var(--status-warn)]"
-          strokeWidth={2}
+          color="var(--status-warn)"
+          style={{ flexShrink: 0 }}
           aria-hidden
         />
         <h2 className="font-[family:var(--font-space-grotesk)] text-[14px] font-medium text-[var(--text-primary)]">
@@ -119,10 +124,10 @@ export default function AlertsBlock({
         </div>
       ) : sorted.length === 0 ? (
         <p className="flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] text-[var(--status-good)]">
-          <CheckCircle
+          <RiCheckboxCircleLine
             size={18}
-            className="shrink-0 text-[var(--status-good)]"
-            strokeWidth={2}
+            color="var(--status-good)"
+            style={{ flexShrink: 0 }}
             aria-hidden
           />
           {labels.allClear}
