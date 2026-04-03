@@ -73,7 +73,7 @@ export default function Header({
               aria-hidden
             />
             <span className="truncate font-[family:var(--font-space-grotesk)] text-[15px] font-semibold leading-none text-[var(--text-primary)]">
-              Smart City Almaty
+              Bed Action Inc.
             </span>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function Header({
         <div className="flex shrink-0 items-center justify-center px-2">
           <time
             dateTime={now?.toISOString()}
-            className="font-[family:var(--font-jetbrains-mono)] text-[20px] font-medium tabular-nums leading-none text-[var(--accent-blue)]"
+            className="font-[family:var(--font-jetbrains-mono)] text-[20px] font-medium tabular-nums leading-none text-[var(--accent)]"
             style={{ letterSpacing: "0.05em" }}
           >
             {timeStr}
@@ -98,29 +98,31 @@ export default function Header({
             style={
               aiPanelOpen
                 ? {
-                    backgroundColor:
-                      "color-mix(in srgb, var(--text-secondary) 8%, transparent)",
-                    borderColor:
-                      "color-mix(in srgb, var(--text-secondary) 20%, transparent)",
-                    color: "var(--text-secondary)",
-                  }
+                  backgroundColor: "transparent",
+                  borderColor: "var(--border-hover)",
+                  color: "var(--text-secondary)",
+                }
                 : {
-                    backgroundColor:
-                      "color-mix(in srgb, var(--accent-violet) 12%, transparent)",
-                    borderColor:
-                      "color-mix(in srgb, var(--accent-violet) 35%, transparent)",
-                    color: "var(--accent-violet)",
-                  }
+                  backgroundColor: "var(--ai-dim)",
+                  borderColor: "var(--ai-border)",
+                  color: "var(--ai-accent)",
+                }
             }
           >
             {aiPanelOpen ? (
               <RiLayoutRightLine
                 size={14}
+                color="var(--text-secondary)"
                 style={{ flexShrink: 0 }}
                 aria-hidden
               />
             ) : (
-              <RiBrainLine size={14} style={{ flexShrink: 0 }} aria-hidden />
+              <RiBrainLine
+                size={14}
+                color="var(--ai-accent)"
+                style={{ flexShrink: 0 }}
+                aria-hidden
+              />
             )}
             <AnimatePresence mode="wait">
               <motion.span
@@ -149,11 +151,10 @@ export default function Header({
                 key={lang}
                 type="button"
                 onClick={() => onLanguageChange(lang)}
-                className={`cursor-pointer rounded-[6px] border-none px-2.5 py-1 font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
-                  language === lang
+                className={`cursor-pointer rounded-[6px] border-none px-2.5 py-1 font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${language === lang
                     ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
                     : "bg-transparent text-[var(--text-muted)]"
-                }`}
+                  }`}
               >
                 {LANG_LABEL[lang]}
               </button>

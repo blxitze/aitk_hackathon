@@ -6,13 +6,22 @@ import type { CSSProperties } from "react";
 import { translateStatus } from "@/lib/utils";
 import type { KPICardProps, KPICardStatus } from "@/types";
 
-const STATUS_COLORS: Record<KPICardStatus, string> = {
+const STATUS_COLOR: Record<KPICardStatus, string> = {
   low: "var(--status-good)",
   good: "var(--status-good)",
   medium: "var(--status-warn)",
   moderate: "var(--status-warn)",
   high: "var(--status-crit)",
   unhealthy: "var(--status-crit)",
+};
+
+const STATUS_DIM: Record<KPICardStatus, string> = {
+  low: "var(--status-good-dim)",
+  good: "var(--status-good-dim)",
+  medium: "var(--status-warn-dim)",
+  moderate: "var(--status-warn-dim)",
+  high: "var(--status-crit-dim)",
+  unhealthy: "var(--status-crit-dim)",
 };
 
 function isCriticalStatus(status: KPICardStatus): boolean {
@@ -44,7 +53,8 @@ export default function KPICard({
   animate = false,
   language = "ru",
 }: KPICardProps) {
-  const statusColor = STATUS_COLORS[status];
+  const statusColor = STATUS_COLOR[status];
+  const statusDim = STATUS_DIM[status];
   const critical = isCriticalStatus(status);
   const valueSizeClass = critical ? "text-[36px]" : "text-[28px]";
 
@@ -159,7 +169,7 @@ export default function KPICard({
           <span
             className="inline-block rounded-full px-2 py-0.5 font-[family:var(--font-space-grotesk)] text-[10px] font-semibold leading-tight"
             style={{
-              backgroundColor: `color-mix(in srgb, ${statusColor} 15%, transparent)`,
+              backgroundColor: statusDim,
               color: statusColor,
             }}
           >

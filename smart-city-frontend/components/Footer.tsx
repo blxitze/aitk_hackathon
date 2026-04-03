@@ -27,7 +27,7 @@ export default function Footer({ theme, onToggleTheme }: FooterProps) {
           href="https://github.com/blxitze/aitk_hackathon"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-[family:var(--font-space-grotesk)] text-[12px] text-[var(--text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--text-primary)]"
+          className="inline-flex items-center gap-1.5 font-[family:var(--font-space-grotesk)] text-[12px] text-[var(--text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--accent)]"
         >
           <RiGithubLine size={16} style={{ flexShrink: 0 }} aria-hidden />
           blxitze/aitk_hackathon
@@ -80,8 +80,8 @@ function ThemePillButton({
 }) {
   const activeStyle: CSSProperties =
     activeScheme === "dark"
-      ? { backgroundColor: "#0f2040", color: "var(--text-primary)" }
-      : { backgroundColor: "#e2e8f0", color: "#0f172a" };
+      ? { backgroundColor: "#111d2e", color: "var(--text-primary)" }
+      : { backgroundColor: "#dde6ef", color: "var(--text-primary)" };
 
   return (
     <button

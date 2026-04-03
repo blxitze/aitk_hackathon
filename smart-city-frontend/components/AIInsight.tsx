@@ -111,7 +111,7 @@ function dataContentKey(data: AIResponse): string {
 
 const PANEL_GLOW_STYLE: CSSProperties = {
   boxShadow:
-    "0 0 0 1px color-mix(in srgb, var(--accent-violet) 15%, transparent), -8px 0 32px color-mix(in srgb, var(--accent-violet) 8%, transparent)",
+    "0 0 0 1px var(--ai-border), -8px 0 32px var(--ai-dim)",
 };
 
 export default function AIInsight({
@@ -136,7 +136,7 @@ export default function AIInsight({
         loading ? "ai-insight-loading-border" : ""
       }`}
       style={{
-        borderLeftColor: loading ? undefined : "var(--accent-violet)",
+        borderLeftColor: loading ? undefined : "var(--ai-accent)",
         ...PANEL_GLOW_STYLE,
       }}
     >
@@ -144,7 +144,7 @@ export default function AIInsight({
         <h2 className="flex min-w-0 items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[var(--text-primary)]">
           <RiBrainLine
             size={18}
-            color="var(--accent-violet)"
+            color="var(--ai-accent)"
             style={{ flexShrink: 0 }}
             aria-hidden
           />
@@ -158,7 +158,7 @@ export default function AIInsight({
                 onClick={() => onAIModeChange("openai")}
                 className={`flex cursor-pointer items-center gap-1 rounded-[6px] border-none px-[10px] py-[3px] font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
                   aiMode === "openai"
-                    ? "bg-[color-mix(in_srgb,var(--accent-blue)_12%,transparent)] text-[var(--accent-blue)]"
+                    ? "bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]"
                     : "bg-transparent text-[var(--text-muted)]"
                 }`}
               >
@@ -170,7 +170,7 @@ export default function AIInsight({
                 onClick={() => onAIModeChange("ollama")}
                 className={`flex cursor-pointer items-center gap-1 rounded-[6px] border-none px-[10px] py-[3px] font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
                   aiMode === "ollama"
-                    ? "bg-[color-mix(in_srgb,var(--accent-violet)_12%,transparent)] text-[var(--accent-violet)]"
+                    ? "bg-[color-mix(in_srgb,var(--ai-accent)_12%,transparent)] text-[var(--ai-accent)]"
                     : "bg-transparent text-[var(--text-muted)]"
                 }`}
               >
@@ -288,7 +288,7 @@ export default function AIInsight({
                       <div className="flex gap-2 leading-[1.5]">
                         <RiArrowRightSLine
                           size={14}
-                          color="var(--accent-violet)"
+                          color="var(--ai-accent)"
                           className="mt-0.5"
                           style={{ flexShrink: 0 }}
                           aria-hidden

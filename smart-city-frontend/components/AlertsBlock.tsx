@@ -65,7 +65,7 @@ function DomainIcon({
     return (
       <RiCarLine
         size={15}
-        color="var(--accent-blue)"
+        color="var(--accent)"
         style={{ flexShrink: 0 }}
         aria-label={label}
       />
@@ -74,7 +74,7 @@ function DomainIcon({
   return (
     <RiWindyLine
       size={15}
-      color="var(--status-good)"
+      color="var(--ai-accent)"
       style={{ flexShrink: 0 }}
       aria-label={label}
     />

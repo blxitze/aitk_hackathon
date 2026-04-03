@@ -35,7 +35,7 @@ const SCENARIO_LABELS: Record<
     ru: "Ночь",
     kz: "Түн",
     time: "23:00",
-    color: "var(--accent-blue)",
+    color: "var(--accent)",
   },
 };
 
