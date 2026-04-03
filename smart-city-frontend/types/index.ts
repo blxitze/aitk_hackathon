@@ -55,11 +55,13 @@ interface MetricsResponse {
 interface AIResponse {
   what_happening: string;
   critical_level: "Low" | "Medium" | "High";
+  critical_reasoning?: string;
   actions: string[];
   reasoning: string;
+  warnings?: string[];
   confidence: string;
   confidence_basis: string;
-  error?: string;
+  error?: string | boolean;
 }
 
 export type KPICardStatus =
@@ -108,24 +110,46 @@ export interface AlertsBlockProps {
   language?: UiLanguage;
 }
 
+export type AiActiveModel = "cloud" | "local";
+
 export interface AIInsightProps {
   data: AIResponse | null;
   loading: boolean;
   error: string | null;
   onClose: () => void;
   /** Used with data to re-run entrance animation on new scenario. */
-  scenario: string;
+  currentScenario: string;
+  currentMetrics: MetricsResponse | null;
+  currentAlerts: Alert[];
+  activeModel: AiActiveModel;
   aiMode: AiMode;
   onAIModeChange: (mode: AiMode) => void;
 }
 
 export type AiMode = "openai" | "ollama";
 
+export interface ExportPdfPayload {
+  scenario: string;
+  has_live_data: boolean;
+  metrics: {
+    transport: TransportMetrics;
+    ecology: EcologyMetrics;
+  };
+  alerts: Alert[];
+  ai_insight: AIResponse;
+  ai_model: string;
+}
+
 export interface HeaderProps {
   language: UiLanguage;
   onLanguageChange: (lang: UiLanguage) => void;
   aiPanelOpen: boolean;
   onToggleAIPanel: () => void;
+}
+
+export interface AlmatyMapProps {
+  scenario: string;
+  language: UiLanguage;
 }
 
 export interface FooterProps {

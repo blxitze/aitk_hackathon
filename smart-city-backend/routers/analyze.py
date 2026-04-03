@@ -73,9 +73,43 @@ RULES:
 - Respond in Russian language
 """
 
-SYSTEM_PROMPT_LOCAL = """
+# Ollama / small models follow the user message language unless forced — keep rules in target language.
+SYSTEM_PROMPT_LOCAL_RU = """
+Ты — URBAN-AI, аналитическая система для дашборда Алматы. Проанализируй данные и верни ТОЛЬКО JSON, без markdown и без текста до/после JSON.
+
+ЯЗЫК ОТВЕТА (критично):
+- Все текстовые значения в JSON — СТРОГО на русском языке: what_happening, critical_reasoning, actions, reasoning, warnings, confidence_basis.
+- Поле confidence — только одно из: Низкая | Средняя | Высокая.
+- Запрещено писать по-английски в любых строковых полях. Только русский.
+- Исключение: ключи JSON и значение critical_level остаются как в схеме (Low, Medium, High — латиница).
+
+Пороги:
+- traffic_index: норма<45, предупреждение<70, критично>=70
+- aqi: хорошо<50, умеренно<100, опасно>=150
+- avg_speed: норма>40 км/ч, предупреждение<40, критично<25
+
+Правило: высокий трафик ухудшает AQI с лагом ~30 минут.
+
+Формат ответа (только такой JSON):
+{
+  "what_happening": "2–3 предложения по-русски, с цифрами из данных.",
+  "critical_level": "Low|Medium|High",
+  "critical_reasoning": "Одно предложение по-русски: почему такой уровень.",
+  "actions": ["действие 1 по-русски", "действие 2 по-русски", "действие 3 по-русски"],
+  "reasoning": "Причинно-следственная связь транспорт↔экология по-русски, с числами.",
+  "warnings": ["риск 1 по-русски", "риск 2 по-русски"],
+  "confidence": "Низкая|Средняя|Высокая",
+  "confidence_basis": "Кратко по-русски: на чём основана уверенность."
+}
+"""
+
+SYSTEM_PROMPT_LOCAL_KZ = """
 You are an urban analytics assistant for Almaty city dashboard.
 Analyze the data below and respond ONLY in JSON format.
+
+LANGUAGE (critical): All narrative string values must be in KAZAKH (қазақ тілі). Do not use English.
+Exception: JSON keys and critical_level values remain Low|Medium|High as in the schema.
+confidence: use Низкая|Средняя|Высокая exactly as shown (dashboard convention).
 
 Baseline thresholds:
 - traffic_index: normal<45, warning<70, critical>=70
@@ -95,8 +129,6 @@ Respond ONLY with this JSON (no markdown, no preamble):
   "confidence": "Низкая|Средняя|Высокая",
   "confidence_basis": "Data basis for confidence."
 }
-
-Answer in Russian.
 """
 
 RETRY_JSON_SUFFIX = "\n\nRespond only with valid JSON, no markdown or code fences."
@@ -138,8 +170,13 @@ def _effective_llm_provider(body: AnalyzeRequest) -> Literal["openai", "ollama"]
     return "ollama" if LLM_PROVIDER == "ollama" else "openai"
 
 
-def _system_prompt_for_provider(provider: Literal["openai", "ollama"]) -> str:
-    return SYSTEM_PROMPT_CLOUD if provider == "openai" else SYSTEM_PROMPT_LOCAL
+def _system_prompt_for_provider(
+    provider: Literal["openai", "ollama"],
+    language: Literal["ru", "kz"],
+) -> str:
+    if provider == "openai":
+        return SYSTEM_PROMPT_CLOUD
+    return SYSTEM_PROMPT_LOCAL_RU if language == "ru" else SYSTEM_PROMPT_LOCAL_KZ
 
 
 def _chart_trend(chart: list[dict[str, Any]], key: str) -> str:
@@ -167,6 +204,34 @@ def _build_user_message(
     chart = list(metrics.get("chart_data") or [])
     traffic_trend = _chart_trend(chart, "traffic_index")
     ecology_trend = _chart_trend(chart, "co2")
+    ts = metrics.get("timestamp", "")
+
+    if language == "ru":
+        trend_ru = {"up": "рост", "down": "снижение", "stable": "стабильно"}.get(
+            traffic_trend, traffic_trend
+        )
+        eco_trend_ru = {"up": "рост", "down": "снижение", "stable": "стабильно"}.get(
+            ecology_trend, ecology_trend
+        )
+        msg = f"""Данные по городу (сценарий: {scenario}):
+
+ТРАНСПОРТ:
+- Индекс трафика: {transport.get("traffic_index")} (статус: {transport.get("status")})
+- Средняя скорость: {transport.get("avg_speed")} км/ч
+- Инциденты: {transport.get("incidents")}
+- Тренд трафика: {trend_ru}
+
+ЭКОЛОГИЯ:
+- AQI: {ecology.get("aqi")} (статус: {ecology.get("status")})
+- CO₂: {ecology.get("co2")} ppm
+- Температура: {ecology.get("temperature")}°C
+- Тренд CO₂: {eco_trend_ru}
+
+Время среза: {ts}
+
+ОБЯЗАТЕЛЬНО: весь текст в JSON-ответе — только на русском языке. Не используй английский в строковых полях.
+"""
+        return msg
 
     msg = f"""Current city data (scenario: {scenario}):
 
@@ -182,10 +247,10 @@ ECOLOGY:
 - Temperature: {ecology.get("temperature")}°C
 - Trend: {ecology_trend}
 
-Time: {metrics.get("timestamp", "")}
+Time: {ts}
 """
     if language == "kz":
-        msg += "\nRespond in Kazakh language."
+        msg += "\nRespond in Kazakh language. Do not use English for narrative text."
     return msg
 
 
@@ -280,7 +345,7 @@ async def _analyze_and_parse(
 async def analyze(body: AnalyzeRequest) -> AIResponse:
     metrics = body.metrics
     provider = _effective_llm_provider(body)
-    system_prompt = _system_prompt_for_provider(provider)
+    system_prompt = _system_prompt_for_provider(provider, body.language)
     user_message = _build_user_message(body.scenario, metrics, body.language)
 
     try:

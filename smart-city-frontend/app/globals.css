@@ -195,3 +195,14 @@
 .header-live-dot {
   animation: liveDot 2s ease-in-out infinite;
 }
+
+.leaflet-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.leaflet-tooltip::before {
+  display: none !important;
+}

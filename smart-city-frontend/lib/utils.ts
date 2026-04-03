@@ -85,3 +85,14 @@ export function formatAlertTime(isoString: string, lang: UiLang = "ru"): string 
     return isoString;
   }
 }
+
+/** True when the backend labels this source as simulated / mock (not live API). */
+export function isSimulatedSource(value: string): boolean {
+  const v = value.toLowerCase();
+  return (
+    v.includes("simulated") ||
+    v.includes("mock_fallback") ||
+    v.includes("mock") ||
+    v.includes("emergency_override")
+  );
+}

@@ -7,11 +7,16 @@ import {
   RiComputerLine,
   RiCloseLine,
   RiErrorWarningLine,
+  RiLoader4Line,
 } from "react-icons/ri";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { isSimulatedSource } from "@/lib/utils";
 import type { AIInsightProps, AiMode, AIResponse } from "@/types";
+
+const PDF_EXPORT_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const SECTION_LABEL =
   "font-[family:var(--font-jetbrains-mono)] text-[10px] font-semibold tracking-[0.1em] text-[var(--text-secondary)]";
@@ -119,16 +124,68 @@ export default function AIInsight({
   loading,
   error,
   onClose,
-  scenario,
+  currentScenario,
+  currentMetrics,
+  currentAlerts,
+  activeModel,
   aiMode,
   onAIModeChange,
 }: AIInsightProps) {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    if (!data || !currentMetrics) return;
+    setExporting(true);
+    try {
+      const hasLiveData = Object.values(currentMetrics.data_sources).some(
+        (v) => !isSimulatedSource(v)
+      );
+      const response = await fetch(`${PDF_EXPORT_BASE}/api/export/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scenario: currentScenario,
+          metrics: {
+            transport: currentMetrics.transport,
+            ecology: currentMetrics.ecology,
+          },
+          alerts: currentAlerts,
+          ai_insight: data,
+          ai_model:
+            activeModel === "cloud" ? "GPT-4o mini" : "Qwen2.5 3B",
+          has_live_data: hasLiveData,
+        }),
+      });
+      if (!response.ok) throw new Error(`Export failed: ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `almaty-report-${currentScenario}-${Date.now()}.pdf`;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF export error:", err);
+    } finally {
+      setExporting(false);
+    }
+  }, [
+    data,
+    currentMetrics,
+    currentAlerts,
+    currentScenario,
+    activeModel,
+  ]);
+
   const panelKey = useMemo(
     () => (data ? dataContentKey(data) : "empty"),
     [data]
   );
 
-  const contentAnimKey = `${data?.critical_level ?? "none"}-${scenario}-${panelKey}`;
+  const contentAnimKey = `${data?.critical_level ?? "none"}-${currentScenario}-${panelKey}`;
 
   return (
     <div
@@ -151,6 +208,30 @@ export default function AIInsight({
           ИИ-анализ
         </h2>
         <div className="flex shrink-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void handleExport()}
+            disabled={!data || !currentMetrics || exporting}
+            aria-busy={exporting}
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[8px] border border-solid bg-transparent px-[10px] py-[3px] text-[11px] transition-colors hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              borderColor: "rgba(255,255,255,0.12)",
+              fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+            }}
+          >
+            {exporting ? (
+              <>
+                <RiLoader4Line
+                  className="animate-spin"
+                  size={12}
+                  aria-hidden
+                />
+                <span>Генерация...</span>
+              </>
+            ) : (
+              <span>↓ PDF</span>
+            )}
+          </button>
           <div className="flex flex-col items-center">
             <div className="flex rounded-[8px] border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_80%,transparent)] p-[3px]">
               <button
@@ -163,7 +244,7 @@ export default function AIInsight({
                 }`}
               >
                 <RiCloudLine size={12} style={{ flexShrink: 0 }} aria-hidden />
-                GPT
+                Cloud
               </button>
               <button
                 type="button"

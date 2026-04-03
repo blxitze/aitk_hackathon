@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { RiBrainLine, RiBuildingLine, RiLayoutRightLine } from "react-icons/ri";
+import Link from "next/link";
+import { RiBrainLine, RiBuildingLine, RiLayoutRightLine, RiMapPin2Line } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import type { HeaderProps, UiLanguage } from "@/types";
 
@@ -160,6 +161,14 @@ export default function Header({
               </button>
             ))}
           </div>
+
+          <Link
+            href="/map"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-[8px] border border-[var(--border)] px-3 py-1.5 font-[family:var(--font-space-grotesk)] text-[12px] text-[var(--text-secondary)] transition-all duration-150 ease-in-out hover:border-[var(--accent-border)] hover:text-[var(--accent)]"
+          >
+            <RiMapPin2Line size={13} className="shrink-0" aria-hidden />
+            Карта города
+          </Link>
         </div>
       </div>
     </header>

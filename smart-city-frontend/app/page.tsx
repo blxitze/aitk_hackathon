@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import KPICard from "@/components/KPICard";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
 import { fetchAnalysis, fetchMetrics } from "@/lib/api";
-import { translateSource } from "@/lib/utils";
+import { isSimulatedSource, translateSource } from "@/lib/utils";
 import {
   RiCheckboxBlankCircleFill,
   RiCheckboxBlankCircleLine,
@@ -182,16 +182,6 @@ function kpiTrend(
   }
 
   return undefined;
-}
-
-function isSimulatedSource(value: string): boolean {
-  const v = value.toLowerCase();
-  return (
-    v.includes("simulated") ||
-    v.includes("mock_fallback") ||
-    v.includes("mock") ||
-    v.includes("emergency_override")
-  );
 }
 
 export default function Home() {
@@ -562,7 +552,10 @@ export default function Home() {
                   loading={loadingAI}
                   error={error}
                   onClose={() => setAiPanelOpen(false)}
-                  scenario={scenario}
+                  currentScenario={scenario}
+                  currentMetrics={metrics}
+                  currentAlerts={metrics?.alerts ?? []}
+                  activeModel={aiMode === "openai" ? "cloud" : "local"}
                   aiMode={aiMode}
                   onAIModeChange={handleAIModeChange}
                 />
