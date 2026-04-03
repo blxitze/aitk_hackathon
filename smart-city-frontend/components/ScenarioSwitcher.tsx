@@ -54,11 +54,17 @@ function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+const HINT_TEXT: Record<ScenarioSwitcherProps["language"], string> = {
+  ru: "Выберите сценарий для запуска AI анализа",
+  kz: "AI талдауды іске қосу үшін сценарийді таңдаңыз",
+};
+
 export default function ScenarioSwitcher({
   current,
   onChange,
   disabled = false,
   language,
+  showHint = false,
 }: ScenarioSwitcherProps) {
   const SELECT_SCENARIO: Record<typeof language, string> = {
     ru: "выберите сценарий",
@@ -127,6 +133,12 @@ export default function ScenarioSwitcher({
           );
         })}
       </div>
+
+      {showHint ? (
+        <p className="mt-2 text-center font-[family:var(--font-space-grotesk)] text-[11px] italic leading-snug text-[#334155]">
+          {HINT_TEXT[language]}
+        </p>
+      ) : null}
     </div>
   );
 }

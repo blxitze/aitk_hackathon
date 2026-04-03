@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AIInsight from "@/components/AIInsight";
 import AlertsBlock from "@/components/AlertsBlock";
 import ChartSection from "@/components/ChartSection";
@@ -197,9 +197,17 @@ export default function Home() {
   const [aiMode, setAiMode] = useState<AiMode>("openai");
   const [language, setLanguage] = useState<UiLanguage>("ru");
   const [animateKPI, setAnimateKPI] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  /** First mount runs loadScenario("normal") — keep panel hidden; later scenario clicks open the panel. */
+  const isFirstScenarioLoadRef = useRef(true);
 
   const loadScenario = useCallback(
     async (scenarioKey: string) => {
+      if (!isFirstScenarioLoadRef.current) {
+        setAiPanelOpen(true);
+      } else {
+        isFirstScenarioLoadRef.current = false;
+      }
       setScenario(scenarioKey);
       setLoadingMetrics(true);
       setLoadingAI(true);
@@ -286,13 +294,21 @@ export default function Home() {
   return (
     <main className="min-h-screen px-6 py-6 text-[#f1f5f9]">
       <div className="mx-auto max-w-[1920px]">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[65fr_35fr] md:items-start">
+        <div
+          className={`grid grid-cols-1 gap-6 md:items-start md:transition-[grid-template-columns] md:duration-300 md:ease-in-out ${
+            aiPanelOpen
+              ? "md:grid-cols-[minmax(0,65fr)_minmax(0,35fr)]"
+              : "md:grid-cols-1"
+          }`}
+        >
           <div className="flex min-w-0 flex-col gap-6">
             <Header
               aiMode={aiMode}
               onAIModeChange={setAiMode}
               language={language}
               onLanguageChange={setLanguage}
+              aiPanelOpen={aiPanelOpen}
+              onToggleAIPanel={() => setAiPanelOpen((prev) => !prev)}
             />
 
             <div
@@ -337,6 +353,7 @@ export default function Home() {
               onChange={(s) => void loadScenario(s)}
               disabled={loadingMetrics}
               language={language}
+              showHint={!aiPanelOpen && aiData === null}
             />
 
             <section aria-label={ui.kpiSectionAria}>
@@ -455,12 +472,17 @@ export default function Home() {
             />
           </div>
 
-          <aside className="min-w-0 md:sticky md:top-24 md:h-fit">
+          <aside
+            className={`min-w-0 md:sticky md:top-24 md:h-fit ${
+              aiPanelOpen ? "block" : "hidden"
+            }`}
+          >
             <AIInsight
               data={aiData}
               loading={loadingAI}
               error={error}
               model={aiMode === "openai" ? "GPT-4o mini" : "Qwen 2.5 3B"}
+              onClose={() => setAiPanelOpen(false)}
             />
           </aside>
         </div>

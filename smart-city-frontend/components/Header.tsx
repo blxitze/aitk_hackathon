@@ -1,6 +1,12 @@
 "use client";
 
-import { Building2, Cloud, Monitor } from "lucide-react";
+import {
+  BrainCircuit,
+  Building2,
+  Cloud,
+  Monitor,
+  PanelRightClose,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import type { HeaderProps, UiLanguage } from "@/types";
 
@@ -16,11 +22,21 @@ const LANG_LABEL: Record<UiLanguage, string> = {
   kz: "ҚЗ",
 };
 
+const AI_PANEL_TOGGLE_LABEL: Record<
+  UiLanguage,
+  { show: string; hide: string }
+> = {
+  ru: { show: "Показать анализ", hide: "Скрыть анализ" },
+  kz: { show: "Талдауды көрсету", hide: "Талдауды жасыру" },
+};
+
 export default function Header({
   aiMode,
   onAIModeChange,
   language,
   onLanguageChange,
+  aiPanelOpen,
+  onToggleAIPanel,
 }: HeaderProps) {
   const [now, setNow] = useState<Date | null>(null);
 
@@ -76,6 +92,34 @@ export default function Header({
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3 md:justify-self-end">
+          <button
+            type="button"
+            onClick={onToggleAIPanel}
+            className="inline-flex items-center gap-1.5 rounded-[8px] border border-solid px-[14px] py-[7px] font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-colors duration-150"
+            style={
+              aiPanelOpen
+                ? {
+                    backgroundColor: "rgba(100,116,139,0.1)",
+                    borderColor: "rgba(100,116,139,0.2)",
+                    color: "#64748b",
+                  }
+                : {
+                    backgroundColor: "rgba(139,92,246,0.15)",
+                    borderColor: "rgba(139,92,246,0.4)",
+                    color: "#8b5cf6",
+                  }
+            }
+          >
+            {aiPanelOpen ? (
+              <PanelRightClose size={16} className="shrink-0" strokeWidth={2} />
+            ) : (
+              <BrainCircuit size={16} className="shrink-0" strokeWidth={2} />
+            )}
+            {aiPanelOpen
+              ? AI_PANEL_TOGGLE_LABEL[language].hide
+              : AI_PANEL_TOGGLE_LABEL[language].show}
+          </button>
+
           <div className="flex rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-0.5">
             {(["ru", "kz"] as const).map((lang) => (
               <button

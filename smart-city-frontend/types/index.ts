@@ -90,6 +90,7 @@ export interface ScenarioSwitcherProps {
   onChange: (scenario: string) => void;
   disabled?: boolean;
   language: UiLanguage;
+  showHint?: boolean;
 }
 
 export interface ChartSectionProps {
@@ -109,6 +110,7 @@ export interface AIInsightProps {
   loading: boolean;
   error: string | null;
   model?: string;
+  onClose: () => void;
 }
 
 export type AiMode = "openai" | "ollama";
@@ -118,6 +120,8 @@ export interface HeaderProps {
   onAIModeChange: (mode: AiMode) => void;
   language: UiLanguage;
   onLanguageChange: (lang: UiLanguage) => void;
+  aiPanelOpen: boolean;
+  onToggleAIPanel: () => void;
 }
 
 export type {

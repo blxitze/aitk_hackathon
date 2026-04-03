@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Brain, ChevronRight } from "lucide-react";
+import { AlertCircle, Brain, ChevronRight, X } from "lucide-react";
 import { useMemo } from "react";
 import type { AIInsightProps, AIResponse } from "@/types";
 
@@ -99,6 +99,7 @@ export default function AIInsight({
   loading,
   error,
   model,
+  onClose,
 }: AIInsightProps) {
   const modelLabel = model ?? DEFAULT_MODEL_LABEL;
 
@@ -117,7 +118,7 @@ export default function AIInsight({
       }}
     >
       <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[#f1f5f9]">
+        <h2 className="flex min-w-0 items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[#f1f5f9]">
           <Brain
             size={18}
             className="shrink-0 text-[#8b5cf6]"
@@ -126,15 +127,25 @@ export default function AIInsight({
           />
           ИИ-анализ
         </h2>
-        <span
-          className="rounded-full px-2.5 py-0.5 font-[family:var(--font-jetbrains-mono)] text-[10px] font-medium"
-          style={{
-            backgroundColor: "rgba(139,92,246,0.15)",
-            color: "#8b5cf6",
-          }}
-        >
-          {modelLabel}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span
+            className="rounded-full px-2.5 py-0.5 font-[family:var(--font-jetbrains-mono)] text-[10px] font-medium"
+            style={{
+              backgroundColor: "rgba(139,92,246,0.15)",
+              color: "#8b5cf6",
+            }}
+          >
+            {modelLabel}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Закрыть панель анализа"
+            className="cursor-pointer rounded-[6px] p-1 text-[#64748b] transition-colors duration-150 hover:bg-[rgba(255,255,255,0.06)] hover:text-[#f1f5f9]"
+          >
+            <X size={16} strokeWidth={2} aria-hidden />
+          </button>
+        </div>
       </div>
 
       {loading ? (
