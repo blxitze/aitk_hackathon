@@ -13,7 +13,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { isSimulatedSource } from "@/lib/utils";
-import type { AIInsightProps, AiMode, AIResponse } from "@/types";
+import type {
+  AIInsightProps,
+  AiMode,
+  AIResponse,
+  ForecastResponse,
+} from "@/types";
 
 const PDF_EXPORT_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -103,6 +108,7 @@ function confidenceColor(confidence: string): string {
 }
 
 function dataContentKey(data: AIResponse): string {
+  const f = data.forecast;
   return [
     data.what_happening,
     data.critical_level,
@@ -111,7 +117,128 @@ function dataContentKey(data: AIResponse): string {
     data.confidence,
     data.confidence_basis,
     data.error ?? "",
+    [
+      f.traffic_index_60,
+      f.traffic_delta,
+      f.aqi_60,
+      f.aqi_delta,
+      f.co2_60,
+      f.co2_delta,
+      f.outlook,
+      f.outlook_level,
+    ].join("\u0003"),
   ].join("\u0002");
+}
+
+function deltaColor(delta: number): string {
+  if (delta > 0) return "var(--status-crit)";
+  if (delta < 0) return "var(--status-good)";
+  return "var(--text-secondary)";
+}
+
+function pctFmt(current: number, delta: number): string {
+  if (current === 0) return delta === 0 ? "0%" : "—";
+  const p = Math.round((delta / Math.abs(current)) * 100);
+  return `${delta >= 0 ? "+" : ""}${p}%`;
+}
+
+function forecastStripBackground(level: ForecastResponse["outlook_level"]): string {
+  const base = "rgba(0,0,0,0.3)";
+  switch (level) {
+    case "high":
+      return `color-mix(in srgb, var(--status-crit) 14%, ${base})`;
+    case "low":
+      return `color-mix(in srgb, var(--status-good) 12%, ${base})`;
+    case "medium":
+    default:
+      return `color-mix(in srgb, var(--status-warn) 12%, ${base})`;
+  }
+}
+
+function outlookShortLabel(outlook: string): string {
+  if (outlook === "ухудшение") return "↑ хуже";
+  if (outlook === "улучшение") return "↓ лучше";
+  return "→ стабильно";
+}
+
+function outlookLabelColor(outlook: string): string {
+  if (outlook === "ухудшение") return "var(--status-crit)";
+  if (outlook === "улучшение") return "var(--status-good)";
+  return "var(--text-secondary)";
+}
+
+function ForecastStrip({ forecast }: { forecast: ForecastResponse }) {
+  const trafficNow = Math.round(
+    forecast.traffic_index_60 - forecast.traffic_delta
+  );
+  const aqiNow = Math.round(forecast.aqi_60 - forecast.aqi_delta);
+  const co2Now = Math.round(forecast.co2_60 - forecast.co2_delta);
+
+  const mono = "font-[family:var(--font-ibm-plex-mono)] tabular-nums";
+
+  return (
+    <div
+      className="rounded-[8px] px-3 py-3"
+      style={{
+        background: forecastStripBackground(forecast.outlook_level),
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <p
+        className="mb-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]"
+        style={{ fontVariantCaps: "small-caps" }}
+      >
+        🔮 Прогноз · через 60 минут
+      </p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div>
+          <p className="mb-1 text-[10px] text-[var(--text-muted)]">Трафик</p>
+          <p className={`${mono} text-[13px] text-[var(--text-primary)]`}>
+            {trafficNow} → {forecast.traffic_index_60}
+          </p>
+          <p
+            className={`${mono} mt-0.5 text-[11px]`}
+            style={{ color: deltaColor(forecast.traffic_delta) }}
+          >
+            {pctFmt(trafficNow, forecast.traffic_delta)}
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-[10px] text-[var(--text-muted)]">AQI</p>
+          <p className={`${mono} text-[13px] text-[var(--text-primary)]`}>
+            {aqiNow} → {forecast.aqi_60}
+          </p>
+          <p
+            className={`${mono} mt-0.5 text-[11px]`}
+            style={{ color: deltaColor(forecast.aqi_delta) }}
+          >
+            {pctFmt(aqiNow, forecast.aqi_delta)}
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-[10px] text-[var(--text-muted)]">CO₂</p>
+          <p className={`${mono} text-[13px] text-[var(--text-primary)]`}>
+            {co2Now}→{Math.round(forecast.co2_60)}
+          </p>
+          <p
+            className={`${mono} mt-0.5 text-[11px]`}
+            style={{ color: deltaColor(forecast.co2_delta) }}
+          >
+            {pctFmt(co2Now, forecast.co2_delta)}
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-[10px] text-[var(--text-muted)]">Прогноз</p>
+          <p
+            className={`${mono} text-[13px]`}
+            style={{ color: outlookLabelColor(forecast.outlook) }}
+          >
+            {outlookShortLabel(forecast.outlook)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const PANEL_GLOW_STYLE: CSSProperties = {
@@ -389,7 +516,20 @@ export default function AIInsight({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.35,
-                  delay: 0.44,
+                  delay: 0.4,
+                  ease: "easeOut",
+                }}
+              >
+                <ForecastStrip forecast={data.forecast} />
+              </motion.section>
+
+              <motion.section
+                className={`${DIVIDER} mt-6`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.48,
                   ease: "easeOut",
                 }}
               >
@@ -405,7 +545,7 @@ export default function AIInsight({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.35,
-                  delay: 0.52,
+                  delay: 0.56,
                   ease: "easeOut",
                 }}
               >

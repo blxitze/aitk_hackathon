@@ -11,7 +11,7 @@ from fastapi import APIRouter
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from models.schemas import AIResponse, AnalyzeRequest
+from models.schemas import AILLMResponse, AIResponse, AnalyzeRequest, ForecastResponse
 
 load_dotenv()
 
@@ -133,7 +133,7 @@ Respond ONLY with this JSON (no markdown, no preamble):
 
 RETRY_JSON_SUFFIX = "\n\nRespond only with valid JSON, no markdown or code fences."
 
-_JSON_PARSE_FALLBACK = AIResponse(
+_JSON_PARSE_FALLBACK = AILLMResponse(
     what_happening="Анализ временно недоступен",
     critical_level="Medium",
     actions=["Проверить подключение к AI сервису"],
@@ -147,7 +147,7 @@ _JSON_PARSE_FALLBACK = AIResponse(
 router = APIRouter(prefix="/api", tags=["analyze"])
 
 
-def _fallback_ai_response(exc: Exception) -> AIResponse:
+def _fallback_ai_response(exc: Exception, forecast: ForecastResponse) -> AIResponse:
     return AIResponse(
         what_happening="Ошибка получения AI анализа",
         critical_level="Low",
@@ -160,6 +160,57 @@ def _fallback_ai_response(exc: Exception) -> AIResponse:
         confidence="Низкая",
         confidence_basis="Нет данных",
         error=str(exc),
+        forecast=forecast,
+    )
+
+
+def calculate_forecast(metrics: dict[str, Any], scenario: str) -> ForecastResponse:
+    """Rule-based 60-minute horizon forecast (no ML)."""
+    transport = metrics.get("transport") or {}
+    ecology = metrics.get("ecology") or {}
+    traffic = int(transport.get("traffic_index") or 0)
+    aqi = int(ecology.get("aqi") or 0)
+    co2 = float(ecology.get("co2") or 400.0)
+
+    key = (scenario or "normal").strip().lower().replace("-", "_")
+
+    if key == "rush_hour":
+        traffic_delta = round(traffic * 0.12)
+        aqi_delta = round(aqi * 0.15)
+        co2_delta = float(round(co2 * 0.08))
+    elif key == "emergency":
+        traffic_delta = round(traffic * 0.05)
+        aqi_delta = round(aqi * 0.18)
+        co2_delta = float(round(co2 * 0.10))
+    else:
+        traffic_delta = -round(traffic * 0.08)
+        aqi_delta = -round(aqi * 0.05)
+        co2_delta = float(-round(co2 * 0.03))
+
+    traffic_60 = min(100, max(0, traffic + traffic_delta))
+    aqi_60 = max(0, aqi + aqi_delta)
+    co2_60 = max(350.0, co2 + co2_delta)
+
+    if traffic_60 > 85 or aqi_60 > 170:
+        outlook = "ухудшение"
+        outlook_level = "high"
+    elif traffic_delta < 0 and aqi_delta < 0:
+        outlook = "улучшение"
+        outlook_level = "low"
+    else:
+        outlook = "стабильно"
+        outlook_level = "medium"
+
+    return ForecastResponse(
+        horizon_minutes=60,
+        traffic_index_60=traffic_60,
+        traffic_delta=traffic_delta,
+        aqi_60=aqi_60,
+        aqi_delta=aqi_delta,
+        co2_60=co2_60,
+        co2_delta=co2_delta,
+        outlook=outlook,
+        outlook_level=outlook_level,
     )
 
 
@@ -194,10 +245,61 @@ def _chart_trend(chart: list[dict[str, Any]], key: str) -> str:
     return "stable"
 
 
+def _forecast_block_ru(forecast: ForecastResponse) -> str:
+    td = forecast.traffic_delta
+    ad = forecast.aqi_delta
+    td_s = f"+{td}" if td > 0 else str(td)
+    ad_s = f"+{ad}" if ad > 0 else str(ad)
+    return f"""
+ПРОГНОЗ НА 60 МИНУТ (расчётный):
+- Индекс трафика: {forecast.traffic_index_60} ({td_s})
+- AQI: {forecast.aqi_60} ({ad_s})
+- CO₂: {forecast.co2_60} ppm
+- Общий прогноз: {forecast.outlook}
+
+Учти прогноз при формировании warnings и actions.
+Если ситуация ухудшается — actions должны быть превентивными.
+"""
+
+
+def _forecast_block_kz(forecast: ForecastResponse) -> str:
+    td = forecast.traffic_delta
+    ad = forecast.aqi_delta
+    td_s = f"+{td}" if td > 0 else str(td)
+    ad_s = f"+{ad}" if ad > 0 else str(ad)
+    return f"""
+60 МИНУТТЫҚ БОЛЖАМ (есептелген):
+- Трафик индексі: {forecast.traffic_index_60} ({td_s})
+- AQI: {forecast.aqi_60} ({ad_s})
+- CO₂: {forecast.co2_60} ppm
+- Жалпы болжам: {forecast.outlook}
+
+warnings және actions қалыптастыруда болжамды ескер.
+Жағдай нашарласа — actions алдын ала сипатта болуы керек.
+"""
+
+
+def _forecast_block_en(forecast: ForecastResponse) -> str:
+    td = forecast.traffic_delta
+    ad = forecast.aqi_delta
+    td_s = f"+{td}" if td > 0 else str(td)
+    ad_s = f"+{ad}" if ad > 0 else str(ad)
+    return f"""
+60-MINUTE FORECAST (rule-based):
+- Traffic index: {forecast.traffic_index_60} ({td_s})
+- AQI: {forecast.aqi_60} ({ad_s})
+- CO₂: {forecast.co2_60} ppm
+- Outlook: {forecast.outlook}
+
+Factor this forecast into warnings and actions; if outlook worsens, actions must be preventive.
+"""
+
+
 def _build_user_message(
     scenario: str,
     metrics: dict[str, Any],
     language: str,
+    forecast: ForecastResponse,
 ) -> str:
     transport = metrics.get("transport") or {}
     ecology = metrics.get("ecology") or {}
@@ -228,7 +330,7 @@ def _build_user_message(
 - Тренд CO₂: {eco_trend_ru}
 
 Время среза: {ts}
-
+{_forecast_block_ru(forecast)}
 ОБЯЗАТЕЛЬНО: весь текст в JSON-ответе — только на русском языке. Не используй английский в строковых полях.
 """
         return msg
@@ -248,6 +350,7 @@ ECOLOGY:
 - Trend: {ecology_trend}
 
 Time: {ts}
+{_forecast_block_en(forecast) if language != "kz" else _forecast_block_kz(forecast)}
 """
     if language == "kz":
         msg += "\nRespond in Kazakh language. Do not use English for narrative text."
@@ -261,14 +364,14 @@ def _strip_json_fences(raw: str) -> str:
     return text.strip()
 
 
-def _parse_ai_json(raw: str) -> AIResponse:
+def _parse_ai_json(raw: str) -> AILLMResponse:
     cleaned = _strip_json_fences(raw)
     cleaned = cleaned.replace("```json", "").replace("```", "").strip()
     data = json.loads(cleaned)
-    return AIResponse.model_validate(data)
+    return AILLMResponse.model_validate(data)
 
 
-def _parse_ai_json_safe(raw: str) -> Optional[AIResponse]:
+def _parse_ai_json_safe(raw: str) -> Optional[AILLMResponse]:
     try:
         return _parse_ai_json(raw)
     except (json.JSONDecodeError, ValueError, ValidationError):
@@ -320,15 +423,20 @@ async def _invoke_llm(
     return await _call_openai(system_prompt, user_message)
 
 
+def _llm_to_response(llm: AILLMResponse, forecast: ForecastResponse) -> AIResponse:
+    return AIResponse(**llm.model_dump(), forecast=forecast)
+
+
 async def _analyze_and_parse(
     provider: Literal["openai", "ollama"],
     system_prompt: str,
     user_message: str,
+    forecast: ForecastResponse,
 ) -> AIResponse:
     raw_text = await _invoke_llm(provider, system_prompt, user_message)
     parsed = _parse_ai_json_safe(raw_text)
     if parsed is not None:
-        return parsed
+        return _llm_to_response(parsed, forecast)
 
     raw_retry = await _invoke_llm(
         provider,
@@ -337,18 +445,21 @@ async def _analyze_and_parse(
     )
     parsed_retry = _parse_ai_json_safe(raw_retry)
     if parsed_retry is not None:
-        return parsed_retry
-    return _JSON_PARSE_FALLBACK
+        return _llm_to_response(parsed_retry, forecast)
+    return _llm_to_response(_JSON_PARSE_FALLBACK, forecast)
 
 
 @router.post("/analyze", response_model=AIResponse, response_model_exclude_none=True)
 async def analyze(body: AnalyzeRequest) -> AIResponse:
     metrics = body.metrics
+    forecast = calculate_forecast(metrics, body.scenario)
     provider = _effective_llm_provider(body)
     system_prompt = _system_prompt_for_provider(provider, body.language)
-    user_message = _build_user_message(body.scenario, metrics, body.language)
+    user_message = _build_user_message(body.scenario, metrics, body.language, forecast)
 
     try:
-        return await _analyze_and_parse(provider, system_prompt, user_message)
+        return await _analyze_and_parse(
+            provider, system_prompt, user_message, forecast
+        )
     except Exception as e:
-        return _fallback_ai_response(e)
+        return _fallback_ai_response(e, forecast)

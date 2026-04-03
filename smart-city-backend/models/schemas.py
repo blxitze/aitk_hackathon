@@ -2,7 +2,7 @@
 
 from typing import Any, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnalyzeRequest(BaseModel):
@@ -12,7 +12,23 @@ class AnalyzeRequest(BaseModel):
     language: Literal["ru", "kz"] = "ru"
 
 
-class AIResponse(BaseModel):
+class ForecastResponse(BaseModel):
+    horizon_minutes: int
+    traffic_index_60: int
+    traffic_delta: int
+    aqi_60: int
+    aqi_delta: int
+    co2_60: float
+    co2_delta: float
+    outlook: str  # "ухудшение" | "стабильно" | "улучшение"
+    outlook_level: str  # "high" | "medium" | "low"
+
+
+class AILLMResponse(BaseModel):
+    """LLM JSON payload (no forecast — forecast is computed server-side)."""
+
+    model_config = ConfigDict(extra="ignore")
+
     what_happening: str
     critical_level: str  # "Low" | "Medium" | "High"
     critical_reasoning: Optional[str] = None
@@ -22,6 +38,10 @@ class AIResponse(BaseModel):
     confidence: str
     confidence_basis: str
     error: Optional[Union[str, bool]] = None
+
+
+class AIResponse(AILLMResponse):
+    forecast: ForecastResponse
 
 
 class TransportMetrics(BaseModel):

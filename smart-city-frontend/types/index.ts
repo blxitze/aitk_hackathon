@@ -52,6 +52,19 @@ interface MetricsResponse {
   data_sources: DataSources;
 }
 
+interface ForecastResponse {
+  horizon_minutes: number;
+  traffic_index_60: number;
+  traffic_delta: number;
+  aqi_60: number;
+  aqi_delta: number;
+  co2_60: number;
+  co2_delta: number;
+  /** Rule-based outlook label (Russian). */
+  outlook: string;
+  outlook_level: "high" | "medium" | "low";
+}
+
 interface AIResponse {
   what_happening: string;
   critical_level: "Low" | "Medium" | "High";
@@ -61,6 +74,7 @@ interface AIResponse {
   warnings?: string[];
   confidence: string;
   confidence_basis: string;
+  forecast: ForecastResponse;
   error?: string | boolean;
 }
 
@@ -165,5 +179,6 @@ export type {
   Correlation,
   DataSources,
   MetricsResponse,
+  ForecastResponse,
   AIResponse,
 };
