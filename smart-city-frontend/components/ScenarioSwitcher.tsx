@@ -11,31 +11,31 @@ const SCENARIO_LABELS: Record<
     ru: "Утренний пик",
     kz: "Таңғы шың",
     time: "08:00",
-    color: "#f59e0b",
+    color: "var(--status-warn)",
   },
   normal: {
     ru: "Норма",
     kz: "Қалыпты",
     time: "13:00",
-    color: "#10b981",
+    color: "var(--status-good)",
   },
   rush_hour: {
     ru: "Час пик",
     kz: "Шың сағат",
     time: "18:00",
-    color: "#f59e0b",
+    color: "var(--status-warn)",
   },
   emergency: {
     ru: "ЧС",
     kz: "ТЖ",
     time: "18:45",
-    color: "#ef4444",
+    color: "var(--status-crit)",
   },
   night: {
     ru: "Ночь",
     kz: "Түн",
     time: "23:00",
-    color: "#3b82f6",
+    color: "var(--accent-blue)",
   },
 };
 
@@ -46,13 +46,6 @@ const SCENARIO_ORDER = [
   "emergency",
   "night",
 ] as const;
-
-function withAlpha(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 const HINT_TEXT: Record<ScenarioSwitcherProps["language"], string> = {
   ru: "Выберите сценарий для запуска AI анализа",
@@ -75,7 +68,7 @@ export default function ScenarioSwitcher({
     <div
       className={`w-full ${disabled ? "pointer-events-none cursor-not-allowed opacity-40" : ""}`}
     >
-      <p className="mb-3 text-center font-[family:var(--font-space-grotesk)] text-[11px] font-medium uppercase tracking-[0.08em] text-[#64748b]">
+      <p className="mb-3 text-center font-[family:var(--font-space-grotesk)] text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-secondary)]">
         {SELECT_SCENARIO[language]}
       </p>
       <div className="flex w-full flex-row flex-wrap justify-center gap-[10px]">
@@ -91,9 +84,9 @@ export default function ScenarioSwitcher({
             "--scenario-emergency-color"?: string;
           } = {
             backgroundColor: active
-              ? withAlpha(def.color, 0.12)
-              : "#0a1628",
-            borderColor: active ? def.color : "rgba(255,255,255,0.06)",
+              ? `color-mix(in srgb, ${def.color} 12%, transparent)`
+              : "var(--bg-surface)",
+            borderColor: active ? def.color : "var(--border)",
             transition: "all 250ms ease",
           };
 
@@ -116,14 +109,16 @@ export default function ScenarioSwitcher({
             >
               <span
                 className="mb-1 font-[family:var(--font-space-grotesk)] text-[11px] font-medium uppercase tracking-[0.08em]"
-                style={{ color: active ? def.color : "#64748b" }}
+                style={{
+                  color: active ? def.color : "var(--text-secondary)",
+                }}
               >
                 {label}
               </span>
               <span
                 className="font-[family:var(--font-jetbrains-mono)] text-[20px] font-medium leading-none"
                 style={{
-                  color: active ? def.color : "#334155",
+                  color: active ? def.color : "var(--text-muted)",
                   transition: "color 250ms ease",
                 }}
               >
@@ -135,7 +130,7 @@ export default function ScenarioSwitcher({
       </div>
 
       {showHint ? (
-        <p className="mt-2 text-center font-[family:var(--font-space-grotesk)] text-[11px] italic leading-snug text-[#334155]">
+        <p className="mt-2 text-center font-[family:var(--font-space-grotesk)] text-[11px] italic leading-snug text-[var(--text-muted)]">
           {HINT_TEXT[language]}
         </p>
       ) : null}

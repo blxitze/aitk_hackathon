@@ -28,9 +28,13 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceGrotesk.className} bg-[#020817]`}
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceGrotesk.className} bg-[var(--bg-page)]`}
     >
-      <body className="min-h-screen bg-[#020817] antialiased">{children}</body>
+      <body className="min-h-screen bg-[var(--bg-page)] antialiased text-[var(--text-primary)] transition-colors duration-200">
+        {children}
+      </body>
     </html>
   );
 }

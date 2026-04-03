@@ -74,6 +74,8 @@ export type KPICardTrend = "up" | "down" | "stable";
 
 export type UiLanguage = "ru" | "kz";
 
+export type ThemeMode = "dark" | "light";
+
 export interface KPICardProps {
   label: string;
   value: number | string;
@@ -97,6 +99,7 @@ export interface ChartSectionProps {
   chartData: HourlyPoint[];
   currentScenario: string;
   language?: UiLanguage;
+  theme: ThemeMode;
 }
 
 export interface AlertsBlockProps {
@@ -109,21 +112,25 @@ export interface AIInsightProps {
   data: AIResponse | null;
   loading: boolean;
   error: string | null;
-  model?: string;
   onClose: () => void;
   /** Used with data to re-run entrance animation on new scenario. */
   scenario: string;
+  aiMode: AiMode;
+  onAIModeChange: (mode: AiMode) => void;
 }
 
 export type AiMode = "openai" | "ollama";
 
 export interface HeaderProps {
-  aiMode: AiMode;
-  onAIModeChange: (mode: AiMode) => void;
   language: UiLanguage;
   onLanguageChange: (lang: UiLanguage) => void;
   aiPanelOpen: boolean;
   onToggleAIPanel: () => void;
+}
+
+export interface FooterProps {
+  theme: ThemeMode;
+  onToggleTheme: () => void;
 }
 
 export type {

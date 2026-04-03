@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root[data-theme="dark"] {
+  --bg-page: #020817;
+  --bg-surface: #0a1628;
+  --bg-elevated: #0f2040;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --text-primary: #f1f5f9;
+  --text-secondary: #64748b;
+  --text-muted: #334155;
+  --accent-blue: #3b82f6;
+  --accent-violet: #8b5cf6;
+  --status-good: #10b981;
+  --status-warn: #f59e0b;
+  --status-crit: #ef4444;
+}
+
+:root[data-theme="light"] {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --accent-blue: #2563eb;
+  --accent-violet: #7c3aed;
+  --status-good: #059669;
+  --status-warn: #d97706;
+  --status-crit: #dc2626;
+}
+
 @keyframes kpi-card-border-pulse {
   0%,
   100% {
@@ -70,13 +102,13 @@
 
 @keyframes violetFlow {
   0% {
-    border-left-color: rgba(139, 92, 246, 0.3);
+    border-left-color: color-mix(in srgb, var(--accent-violet) 30%, transparent);
   }
   50% {
-    border-left-color: rgba(139, 92, 246, 1);
+    border-left-color: var(--accent-violet);
   }
   100% {
-    border-left-color: rgba(139, 92, 246, 0.3);
+    border-left-color: color-mix(in srgb, var(--accent-violet) 30%, transparent);
   }
 }
 
@@ -102,29 +134,26 @@
 .insight-shimmer {
   background: linear-gradient(
     90deg,
-    #0f2040 0%,
-    #1e3a5f 50%,
-    #0f2040 100%
+    var(--bg-elevated) 0%,
+    color-mix(in srgb, var(--accent-blue) 25%, var(--bg-elevated)) 50%,
+    var(--bg-elevated) 100%
   );
   background-size: 200% 100%;
   animation: insight-shimmer 1.5s ease-in-out infinite;
 }
 
-@keyframes livePulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0.6;
-  }
+@keyframes liveDot {
+  0%,
   100% {
     transform: scale(1);
     opacity: 1;
   }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.4;
+  }
 }
 
-.live-indicator-dot {
-  animation: livePulse 2s ease-in-out infinite;
+.header-live-dot {
+  animation: liveDot 2s ease-in-out infinite;
 }

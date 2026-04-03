@@ -31,17 +31,10 @@ const LEVEL_ORDER: Record<Alert["level"], number> = {
 };
 
 const LEVEL_COLOR: Record<Alert["level"], string> = {
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#10b981",
+  high: "var(--status-crit)",
+  medium: "var(--status-warn)",
+  low: "var(--status-good)",
 };
-
-function withAlpha(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 function sortAlerts(alerts: Alert[]): Alert[] {
   return [...alerts].sort(
@@ -50,9 +43,9 @@ function sortAlerts(alerts: Alert[]): Alert[] {
 }
 
 function badgeSeverityColor(alerts: Alert[]): string {
-  if (alerts.some((a) => a.level === "high")) return "#ef4444";
-  if (alerts.some((a) => a.level === "medium")) return "#f59e0b";
-  return "#10b981";
+  if (alerts.some((a) => a.level === "high")) return "var(--status-crit)";
+  if (alerts.some((a) => a.level === "medium")) return "var(--status-warn)";
+  return "var(--status-good)";
 }
 
 function DomainIcon({
@@ -67,7 +60,7 @@ function DomainIcon({
     return (
       <Car
         size={16}
-        className="shrink-0 text-[#f1f5f9]"
+        className="shrink-0 text-[var(--text-primary)]"
         strokeWidth={2}
         aria-label={label}
       />
@@ -76,7 +69,7 @@ function DomainIcon({
   return (
     <Wind
       size={16}
-      className="shrink-0 text-[#f1f5f9]"
+      className="shrink-0 text-[var(--text-primary)]"
       strokeWidth={2}
       aria-label={label}
     />
@@ -93,21 +86,21 @@ export default function AlertsBlock({
   const labels = ALERTS_LABELS[language];
 
   return (
-    <div className="rounded-[12px] bg-[#0a1628] p-5">
+    <div className="rounded-[12px] bg-[var(--bg-surface)] p-5">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <AlertTriangle
           size={18}
-          className="shrink-0 text-[#f59e0b]"
+          className="shrink-0 text-[var(--status-warn)]"
           strokeWidth={2}
           aria-hidden
         />
-        <h2 className="font-[family:var(--font-space-grotesk)] text-[14px] font-medium text-[#f1f5f9]">
+        <h2 className="font-[family:var(--font-space-grotesk)] text-[14px] font-medium text-[var(--text-primary)]">
           {labels.title}
         </h2>
         <span
           className="rounded-md px-2 py-0.5 font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium tabular-nums"
           style={{
-            backgroundColor: withAlpha(countBadgeColor, 0.15),
+            backgroundColor: `color-mix(in srgb, ${countBadgeColor} 15%, transparent)`,
             color: countBadgeColor,
           }}
         >
@@ -120,15 +113,15 @@ export default function AlertsBlock({
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="h-[44px] animate-pulse rounded-[8px] bg-[#0f2040]"
+              className="h-[44px] animate-pulse rounded-[8px] bg-[var(--bg-elevated)]"
             />
           ))}
         </div>
       ) : sorted.length === 0 ? (
-        <p className="flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] text-[#10b981]">
+        <p className="flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] text-[var(--status-good)]">
           <CheckCircle
             size={18}
-            className="shrink-0 text-[#10b981]"
+            className="shrink-0 text-[var(--status-good)]"
             strokeWidth={2}
             aria-hidden
           />
@@ -157,11 +150,11 @@ export default function AlertsBlock({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="font-[family:var(--font-space-grotesk)] text-[13px] leading-snug text-[#f1f5f9]">
+                      <p className="font-[family:var(--font-space-grotesk)] text-[13px] leading-snug text-[var(--text-primary)]">
                         {alert.message}
                       </p>
                       <time
-                        className="shrink-0 text-right font-[family:var(--font-jetbrains-mono)] text-[10px] leading-tight text-[#64748b]"
+                        className="shrink-0 text-right font-[family:var(--font-jetbrains-mono)] text-[10px] leading-tight text-[var(--text-secondary)]"
                         dateTime={alert.time}
                       >
                         {formatAlertTime(alert.time, language)}
@@ -185,7 +178,7 @@ export default function AlertsBlock({
                   style={{
                     ...outerStyle,
                     borderLeftColor: statusColor,
-                    backgroundColor: withAlpha(statusColor, 0.04),
+                    backgroundColor: `color-mix(in srgb, ${statusColor} 4%, transparent)`,
                   }}
                 >
                   {isHigh ? (

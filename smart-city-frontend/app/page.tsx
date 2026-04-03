@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AIInsight from "@/components/AIInsight";
 import AlertsBlock from "@/components/AlertsBlock";
 import ChartSection from "@/components/ChartSection";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import KPICard from "@/components/KPICard";
 import ScenarioSwitcher from "@/components/ScenarioSwitcher";
@@ -17,6 +18,7 @@ import type {
   DataSources,
   KPICardTrend,
   MetricsResponse,
+  ThemeMode,
   UiLanguage,
 } from "@/types";
 
@@ -91,13 +93,6 @@ function dataSourceLineLabel(
   return key;
 }
 
-function withAlpha(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 function transportRank(s: MetricsResponse["transport"]["status"]): number {
   if (s === "high") return 3;
   if (s === "medium") return 2;
@@ -116,12 +111,20 @@ function insightAccent(metrics: MetricsResponse): { color: string } {
   if (transportRank(t) >= ecologyRank(e)) {
     return {
       color:
-        t === "high" ? "#ef4444" : t === "medium" ? "#f59e0b" : "#10b981",
+        t === "high"
+          ? "var(--status-crit)"
+          : t === "medium"
+            ? "var(--status-warn)"
+            : "var(--status-good)",
     };
   }
   return {
     color:
-      e === "unhealthy" ? "#ef4444" : e === "moderate" ? "#f59e0b" : "#10b981",
+      e === "unhealthy"
+        ? "var(--status-crit)"
+        : e === "moderate"
+          ? "var(--status-warn)"
+          : "var(--status-good)",
   };
 }
 
@@ -199,8 +202,48 @@ export default function Home() {
   const [language, setLanguage] = useState<UiLanguage>("ru");
   const [animateKPI, setAnimateKPI] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [theme, setTheme] = useState<ThemeMode>("dark");
   /** First mount runs loadScenario("normal") — keep panel hidden; later scenario clicks open the panel. */
   const isFirstScenarioLoadRef = useRef(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sc-theme") as ThemeMode | null;
+    if (saved === "dark" || saved === "light") {
+      setTheme(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => {
+      const next: ThemeMode = t === "dark" ? "light" : "dark";
+      localStorage.setItem("sc-theme", next);
+      return next;
+    });
+  }, []);
+
+  const handleAIModeChange = useCallback(
+    (mode: AiMode) => {
+      setAiMode(mode);
+      if (!metrics) return;
+      setLoadingAI(true);
+      setError(null);
+      void fetchAnalysis(scenario, metrics, mode, language)
+        .then((ai) => {
+          setAiData(ai);
+          setError(null);
+        })
+        .catch((e) => {
+          setAiData(null);
+          setError(e instanceof Error ? e.message : "Ошибка анализа ИИ");
+        })
+        .finally(() => setLoadingAI(false));
+    },
+    [metrics, scenario, language]
+  );
 
   const loadScenario = useCallback(
     async (scenarioKey: string) => {
@@ -281,19 +324,20 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
+    // Refetch AI when UI language changes; aiMode changes handled in handleAIModeChange
     // eslint-disable-next-line react-hooks/exhaustive-deps -- scenario omitted; loadScenario handles scenario changes
-  }, [aiMode, language]);
+  }, [language]);
 
   const insightAccentStyle = metrics
     ? insightAccent(metrics)
-    : { color: "#64748b" };
+    : { color: "var(--text-secondary)" };
 
   const showInsightShimmer = loadingAI;
   const ui = UI_LABELS[language];
   const kpi = KPI_LABELS[language];
 
   return (
-    <main className="min-h-screen px-6 py-6 text-[#f1f5f9]">
+    <main className="min-h-screen px-6 py-6 text-[var(--text-primary)] transition-colors duration-200">
       <div className="mx-auto max-w-[1920px]">
         <motion.div
           layout
@@ -316,8 +360,6 @@ export default function Home() {
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
           >
             <Header
-              aiMode={aiMode}
-              onAIModeChange={setAiMode}
               language={language}
               onLanguageChange={setLanguage}
               aiPanelOpen={aiPanelOpen}
@@ -328,11 +370,11 @@ export default function Home() {
               className="w-full px-6 py-2.5"
               style={{
                 backgroundColor: metrics
-                  ? withAlpha(insightAccentStyle.color, 0.08)
-                  : "rgba(15,32,64,0.5)",
+                  ? `color-mix(in srgb, ${insightAccentStyle.color} 8%, transparent)`
+                  : "color-mix(in srgb, var(--bg-elevated) 50%, transparent)",
                 borderBottom: metrics
-                  ? `1px solid ${withAlpha(insightAccentStyle.color, 0.2)}`
-                  : "1px solid rgba(255,255,255,0.06)",
+                  ? `1px solid color-mix(in srgb, ${insightAccentStyle.color} 20%, transparent)`
+                  : "1px solid var(--border)",
               }}
             >
               {showInsightShimmer ? (
@@ -439,7 +481,7 @@ export default function Home() {
 
               {metrics ? (
                 <div className="mt-3">
-                  <p className="mb-2 font-[family:var(--font-space-grotesk)] text-[10px] font-medium uppercase tracking-[0.06em] text-[#64748b]">
+                  <p className="mb-2 font-[family:var(--font-space-grotesk)] text-[10px] font-medium uppercase tracking-[0.06em] text-[var(--text-secondary)]">
                     {ui.dataSources}
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -450,12 +492,14 @@ export default function Home() {
                         return (
                           <span
                             key={key}
-                            className="inline-flex items-center gap-1.5 font-[family:var(--font-jetbrains-mono)] text-[10px] text-[#64748b]"
+                            className="inline-flex items-center gap-1.5 font-[family:var(--font-jetbrains-mono)] text-[10px] text-[var(--text-secondary)]"
                           >
                             <span
                               className="h-1.5 w-1.5 shrink-0 rounded-full"
                               style={{
-                                backgroundColor: real ? "#10b981" : "#64748b",
+                                backgroundColor: real
+                                  ? "var(--status-good)"
+                                  : "var(--text-secondary)",
                               }}
                               aria-hidden
                             />
@@ -475,6 +519,7 @@ export default function Home() {
                 chartData={metrics.chart_data}
                 currentScenario={scenario}
                 language={language}
+                theme={theme}
               />
             ) : null}
 
@@ -498,21 +543,23 @@ export default function Home() {
                   opacity: { duration: 0.3 },
                 }}
                 className="min-w-0 self-start"
-                style={{ position: "sticky", top: "88px" }}
+                style={{ position: "sticky", top: "56px" }}
               >
                 <AIInsight
                   data={aiData}
                   loading={loadingAI}
                   error={error}
-                  model={aiMode === "openai" ? "GPT-4o mini" : "Qwen 2.5 3B"}
                   onClose={() => setAiPanelOpen(false)}
                   scenario={scenario}
+                  aiMode={aiMode}
+                  onAIModeChange={handleAIModeChange}
                 />
               </motion.div>
             ) : null}
           </AnimatePresence>
         </motion.div>
       </div>
+      <Footer theme={theme} onToggleTheme={toggleTheme} />
     </main>
   );
 }

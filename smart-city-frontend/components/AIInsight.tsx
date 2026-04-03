@@ -1,19 +1,27 @@
 "use client";
 
-import { AlertCircle, Brain, ChevronRight, X } from "lucide-react";
+import {
+  AlertCircle,
+  Brain,
+  ChevronRight,
+  Cloud,
+  Monitor,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo } from "react";
-import type { AIInsightProps, AIResponse } from "@/types";
+import type { CSSProperties } from "react";
+import type { AIInsightProps, AiMode, AIResponse } from "@/types";
 
 const SECTION_LABEL =
-  "font-[family:var(--font-jetbrains-mono)] text-[10px] font-semibold tracking-[0.1em] text-[#64748b]";
+  "font-[family:var(--font-jetbrains-mono)] text-[10px] font-semibold tracking-[0.1em] text-[var(--text-secondary)]";
 
-const DIVIDER = "border-t border-[rgba(255,255,255,0.06)] pt-6";
+const DIVIDER = "border-t border-[var(--border)] pt-6";
 
-const DEFAULT_MODEL_LABEL = "GPT-4o mini";
-
-const PANEL_GLOW =
-  "0 0 0 1px rgba(139,92,246,0.15), -8px 0 32px rgba(139,92,246,0.08)";
+const MODEL_LINE: Record<AiMode, string> = {
+  openai: "gpt-4o mini",
+  ollama: "qwen 2.5 3b",
+};
 
 /** LLM may return PascalCase, lowercase, or Russian labels — normalize before styling. */
 function normalizeCriticalLevel(
@@ -39,24 +47,24 @@ function criticalBadgeStyles(level: string | undefined | null): {
   switch (normalized) {
     case "High":
       return {
-        bg: "rgba(239,68,68,0.15)",
-        color: "#ef4444",
-        border: "rgba(239,68,68,0.3)",
+        bg: "color-mix(in srgb, var(--status-crit) 15%, transparent)",
+        color: "var(--status-crit)",
+        border: "color-mix(in srgb, var(--status-crit) 30%, transparent)",
         label: "Высокая",
       };
     case "Medium":
       return {
-        bg: "rgba(245,158,11,0.15)",
-        color: "#f59e0b",
-        border: "rgba(245,158,11,0.3)",
+        bg: "color-mix(in srgb, var(--status-warn) 15%, transparent)",
+        color: "var(--status-warn)",
+        border: "color-mix(in srgb, var(--status-warn) 30%, transparent)",
         label: "Средняя",
       };
     case "Low":
     default:
       return {
-        bg: "rgba(16,185,129,0.15)",
-        color: "#10b981",
-        border: "rgba(16,185,129,0.3)",
+        bg: "color-mix(in srgb, var(--status-good) 15%, transparent)",
+        color: "var(--status-good)",
+        border: "color-mix(in srgb, var(--status-good) 30%, transparent)",
         label: "Низкая",
       };
   }
@@ -80,10 +88,13 @@ function CriticalBadge({ level }: { level: string | undefined | null }) {
 
 function confidenceColor(confidence: string): string {
   const t = confidence.trim().toLowerCase();
-  if (t === "высокая" || t === "high" || t.includes("высок")) return "#10b981";
-  if (t === "низкая" || t === "low" || t.includes("низк")) return "#ef4444";
-  if (t === "средняя" || t === "medium" || t.includes("средн")) return "#f59e0b";
-  return "#64748b";
+  if (t === "высокая" || t === "high" || t.includes("высок"))
+    return "var(--status-good)";
+  if (t === "низкая" || t === "low" || t.includes("низк"))
+    return "var(--status-crit)";
+  if (t === "средняя" || t === "medium" || t.includes("средн"))
+    return "var(--status-warn)";
+  return "var(--text-secondary)";
 }
 
 function dataContentKey(data: AIResponse): string {
@@ -98,16 +109,20 @@ function dataContentKey(data: AIResponse): string {
   ].join("\u0002");
 }
 
+const PANEL_GLOW_STYLE: CSSProperties = {
+  boxShadow:
+    "0 0 0 1px color-mix(in srgb, var(--accent-violet) 15%, transparent), -8px 0 32px color-mix(in srgb, var(--accent-violet) 8%, transparent)",
+};
+
 export default function AIInsight({
   data,
   loading,
   error,
-  model,
   onClose,
   scenario,
+  aiMode,
+  onAIModeChange,
 }: AIInsightProps) {
-  const modelLabel = model ?? DEFAULT_MODEL_LABEL;
-
   const panelKey = useMemo(
     () => (data ? dataContentKey(data) : "empty"),
     [data]
@@ -117,39 +132,61 @@ export default function AIInsight({
 
   return (
     <div
-      className={`flex min-h-[600px] flex-col rounded-[12px] border-l-[3px] border-solid bg-[#0a1628] p-6 ${
+      className={`flex min-h-[600px] flex-col rounded-[12px] border-l-[3px] border-solid bg-[var(--bg-surface)] p-6 ${
         loading ? "ai-insight-loading-border" : ""
       }`}
       style={{
-        borderLeftColor: loading ? undefined : "#8b5cf6",
-        boxShadow: PANEL_GLOW,
+        borderLeftColor: loading ? undefined : "var(--accent-violet)",
+        ...PANEL_GLOW_STYLE,
       }}
     >
       <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <h2 className="flex min-w-0 items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[#f1f5f9]">
+        <h2 className="flex min-w-0 items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[var(--text-primary)]">
           <Brain
             size={18}
-            className="shrink-0 text-[#8b5cf6]"
+            className="shrink-0 text-[var(--accent-violet)]"
             strokeWidth={2}
             aria-hidden
           />
           ИИ-анализ
         </h2>
-        <div className="flex shrink-0 items-center gap-2">
-          <span
-            className="rounded-full px-2.5 py-0.5 font-[family:var(--font-jetbrains-mono)] text-[10px] font-medium"
-            style={{
-              backgroundColor: "rgba(139,92,246,0.15)",
-              color: "#8b5cf6",
-            }}
-          >
-            {modelLabel}
-          </span>
+        <div className="flex shrink-0 items-center gap-3">
+          <div className="flex flex-col items-center">
+            <div className="flex rounded-[8px] border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_80%,transparent)] p-[3px]">
+              <button
+                type="button"
+                onClick={() => onAIModeChange("openai")}
+                className={`flex cursor-pointer items-center gap-1 rounded-[6px] border-none px-[10px] py-[3px] font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
+                  aiMode === "openai"
+                    ? "bg-[color-mix(in_srgb,var(--accent-blue)_12%,transparent)] text-[var(--accent-blue)]"
+                    : "bg-transparent text-[var(--text-muted)]"
+                }`}
+              >
+                <Cloud size={12} strokeWidth={2} aria-hidden />
+                GPT
+              </button>
+              <button
+                type="button"
+                onClick={() => onAIModeChange("ollama")}
+                className={`flex cursor-pointer items-center gap-1 rounded-[6px] border-none px-[10px] py-[3px] font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
+                  aiMode === "ollama"
+                    ? "bg-[color-mix(in_srgb,var(--accent-violet)_12%,transparent)] text-[var(--accent-violet)]"
+                    : "bg-transparent text-[var(--text-muted)]"
+                }`}
+              >
+                <Monitor size={12} strokeWidth={2} aria-hidden />
+                Local
+              </button>
+            </div>
+            <span className="mt-0.5 text-center font-[family:var(--font-jetbrains-mono)] text-[9px] leading-none text-[var(--text-muted)]">
+              {MODEL_LINE[aiMode]}
+            </span>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Закрыть панель анализа"
-            className="cursor-pointer rounded-[6px] p-1 text-[#64748b] transition-colors duration-150 hover:bg-[rgba(255,255,255,0.06)] hover:text-[#f1f5f9]"
+            className="cursor-pointer rounded-[6px] p-1 text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
           >
             <X size={16} strokeWidth={2} aria-hidden />
           </button>
@@ -165,27 +202,27 @@ export default function AIInsight({
         {loading ? (
           <div className="flex flex-1 flex-col">
             <div className="space-y-3">
-              <div className="h-4 w-full animate-pulse rounded bg-[#0f2040]" />
-              <div className="h-4 w-[80%] animate-pulse rounded bg-[#0f2040]" />
-              <div className="h-4 w-[60%] animate-pulse rounded bg-[#0f2040]" />
-              <div className="h-4 w-[90%] animate-pulse rounded bg-[#0f2040]" />
+              <div className="h-4 w-full animate-pulse rounded bg-[var(--bg-elevated)]" />
+              <div className="h-4 w-[80%] animate-pulse rounded bg-[var(--bg-elevated)]" />
+              <div className="h-4 w-[60%] animate-pulse rounded bg-[var(--bg-elevated)]" />
+              <div className="h-4 w-[90%] animate-pulse rounded bg-[var(--bg-elevated)]" />
             </div>
-            <p className="mt-6 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-snug text-[#64748b]">
+            <p className="mt-6 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-snug text-[var(--text-secondary)]">
               Анализирую...
             </p>
           </div>
         ) : error ? (
           <div className="flex flex-1 flex-col">
-            <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[#ef4444]">
+            <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[var(--status-crit)]">
               <AlertCircle
                 size={18}
-                className="mt-0.5 shrink-0 text-[#ef4444]"
+                className="mt-0.5 shrink-0 text-[var(--status-crit)]"
                 strokeWidth={2}
                 aria-hidden
               />
               Ошибка анализа ИИ
             </p>
-            <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] leading-relaxed text-[#64748b]">
+            <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] leading-relaxed text-[var(--text-secondary)]">
               {error}
             </p>
           </div>
@@ -209,7 +246,7 @@ export default function AIInsight({
                 }}
               >
                 <p className={SECTION_LABEL}>ЧТО ПРОИСХОДИТ</p>
-                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[15px] leading-[1.6] text-[#f1f5f9]">
+                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[15px] leading-[1.6] text-[var(--text-primary)]">
                   {data.what_happening}
                 </p>
               </motion.section>
@@ -245,16 +282,16 @@ export default function AIInsight({
                   {data.actions.slice(0, 3).map((action, i) => (
                     <li
                       key={`${i}-${action.slice(0, 32)}`}
-                      className="border-b border-[rgba(255,255,255,0.04)] py-1.5 last:border-b-0"
+                      className="border-b border-[var(--border)] py-1.5 last:border-b-0"
                     >
                       <div className="flex gap-2 leading-[1.5]">
                         <ChevronRight
                           size={14}
-                          className="mt-0.5 shrink-0 text-[#8b5cf6]"
+                          className="mt-0.5 shrink-0 text-[var(--accent-violet)]"
                           strokeWidth={2}
                           aria-hidden
                         />
-                        <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[#f1f5f9]">
+                        <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[var(--text-primary)]">
                           {action}
                         </span>
                       </div>
@@ -274,7 +311,7 @@ export default function AIInsight({
                 }}
               >
                 <p className={SECTION_LABEL}>ОБОСНОВАНИЕ</p>
-                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-[1.6] text-[#64748b]">
+                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-[1.6] text-[var(--text-secondary)]">
                   {data.reasoning}
                 </p>
               </motion.section>
@@ -296,14 +333,14 @@ export default function AIInsight({
                 >
                   {data.confidence}
                 </p>
-                <p className="mt-1 font-[family:var(--font-space-grotesk)] text-[12px] leading-snug text-[#64748b]">
+                <p className="mt-1 font-[family:var(--font-space-grotesk)] text-[12px] leading-snug text-[var(--text-secondary)]">
                   {data.confidence_basis}
                 </p>
               </motion.section>
             </motion.div>
           </AnimatePresence>
         ) : (
-          <p className="font-[family:var(--font-space-grotesk)] text-[13px] text-[#64748b]">
+          <p className="font-[family:var(--font-space-grotesk)] text-[13px] text-[var(--text-secondary)]">
             Нет данных ИИ
           </p>
         )}

@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  BrainCircuit,
-  Building2,
-  Cloud,
-  Monitor,
-  PanelRightClose,
-} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Brain, Building2, PanelRightClose } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { HeaderProps, UiLanguage } from "@/types";
 
@@ -23,17 +17,12 @@ const LANG_LABEL: Record<UiLanguage, string> = {
   kz: "ҚЗ",
 };
 
-const AI_PANEL_TOGGLE_LABEL: Record<
-  UiLanguage,
-  { show: string; hide: string }
-> = {
-  ru: { show: "Показать анализ", hide: "Скрыть анализ" },
-  kz: { show: "Талдауды көрсету", hide: "Талдауды жасыру" },
+const AI_PANEL_LABEL: Record<UiLanguage, { closed: string; open: string }> = {
+  ru: { closed: "Анализ", open: "Скрыть" },
+  kz: { closed: "Талдау", open: "Жасыру" },
 };
 
 export default function Header({
-  aiMode,
-  onAIModeChange,
   language,
   onLanguageChange,
   aiPanelOpen,
@@ -52,149 +41,120 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-[rgba(255,255,255,0.06)] px-6 py-[14px] backdrop-blur-[12px]"
-      style={{ backgroundColor: "rgba(2, 8, 23, 0.85)" }}
+      className="sticky top-0 z-50 h-14 shrink-0 overflow-hidden border-b border-[var(--border)] backdrop-blur-[16px]"
+      style={{
+        backgroundColor: "color-mix(in srgb, var(--bg-page) 92%, transparent)",
+      }}
     >
-      <div className="mx-auto grid w-full max-w-[1920px] grid-cols-1 items-center gap-y-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-4">
-        <div className="flex min-w-0 items-center">
+      <div className="mx-auto flex h-full w-full max-w-[1920px] items-center justify-between px-6">
+        {/* Left */}
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <div className="flex shrink-0 items-center gap-1.5">
+            <span
+              className="header-live-dot h-2 w-2 shrink-0 rounded-full bg-[var(--status-good)]"
+              aria-hidden
+            />
+            <span
+              className="font-[family:var(--font-jetbrains-mono)] text-[10px] font-normal uppercase leading-none text-[var(--status-good)]"
+              style={{ letterSpacing: "0.12em" }}
+            >
+              ОНЛАЙН
+            </span>
+          </div>
           <span
-            className="live-indicator-dot h-2 w-2 shrink-0 rounded-full bg-[#10b981]"
+            className="h-[18px] w-px shrink-0 bg-[var(--border)]"
             aria-hidden
           />
-          <span className="ml-1.5 font-[family:var(--font-jetbrains-mono)] text-[10px] font-semibold uppercase tracking-[0.15em] text-[#10b981]">
-            ОНЛАЙН
-          </span>
-          <span
-            className="mx-4 h-4 w-px shrink-0 bg-[rgba(255,255,255,0.08)]"
-            aria-hidden
-          />
-          <Building2
-            size={16}
-            className="mr-2 shrink-0 text-[#f1f5f9]"
-            aria-hidden
-          />
-          <div className="min-w-0">
-            <h1 className="font-[family:var(--font-space-grotesk)] text-[18px] font-semibold leading-tight text-[#f1f5f9]">
-              Умный город Алматы
-            </h1>
-            <p className="mt-0.5 font-[family:var(--font-space-grotesk)] text-[11px] leading-snug text-[#64748b]">
-              Панель управленческих решений
-            </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <Building2
+              size={15}
+              className="shrink-0 text-[var(--text-secondary)]"
+              strokeWidth={2}
+              aria-hidden
+            />
+            <span className="truncate font-[family:var(--font-space-grotesk)] text-[15px] font-semibold leading-none text-[var(--text-primary)]">
+              Smart City Almaty
+            </span>
           </div>
         </div>
 
-        <div className="flex justify-center md:px-2">
+        {/* Center */}
+        <div className="flex shrink-0 items-center justify-center px-2">
           <time
             dateTime={now?.toISOString()}
-            className="font-[family:var(--font-jetbrains-mono)] text-[22px] font-medium tabular-nums leading-none text-[#3b82f6]"
+            className="font-[family:var(--font-jetbrains-mono)] text-[20px] font-medium tabular-nums leading-none text-[var(--accent-blue)]"
+            style={{ letterSpacing: "0.05em" }}
           >
             {timeStr}
           </time>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 md:justify-self-end">
+        {/* Right: panel toggle | divider | language only */}
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
           <button
             type="button"
             onClick={onToggleAIPanel}
-            className="inline-flex items-center gap-1.5 rounded-[8px] border border-solid px-[14px] py-[7px] font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-colors duration-150"
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[8px] border border-solid px-3 py-1.5 font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-all duration-200 ease-in-out"
             style={
               aiPanelOpen
                 ? {
-                    backgroundColor: "rgba(100,116,139,0.1)",
-                    borderColor: "rgba(100,116,139,0.2)",
-                    color: "#64748b",
+                    backgroundColor:
+                      "color-mix(in srgb, var(--text-secondary) 8%, transparent)",
+                    borderColor:
+                      "color-mix(in srgb, var(--text-secondary) 20%, transparent)",
+                    color: "var(--text-secondary)",
                   }
                 : {
-                    backgroundColor: "rgba(139,92,246,0.15)",
-                    borderColor: "rgba(139,92,246,0.4)",
-                    color: "#8b5cf6",
+                    backgroundColor:
+                      "color-mix(in srgb, var(--accent-violet) 12%, transparent)",
+                    borderColor:
+                      "color-mix(in srgb, var(--accent-violet) 35%, transparent)",
+                    color: "var(--accent-violet)",
                   }
             }
           >
+            {aiPanelOpen ? (
+              <PanelRightClose size={14} strokeWidth={2} aria-hidden />
+            ) : (
+              <Brain size={14} strokeWidth={2} aria-hidden />
+            )}
             <AnimatePresence mode="wait">
               <motion.span
-                key={aiPanelOpen ? "icon-hide" : "icon-show"}
-                initial={{ opacity: 0, y: -8 }}
+                key={`${aiPanelOpen ? "open" : "closed"}-${language}`}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.2 }}
-                className="inline-flex shrink-0"
-              >
-                {aiPanelOpen ? (
-                  <PanelRightClose size={16} strokeWidth={2} aria-hidden />
-                ) : (
-                  <BrainCircuit size={16} strokeWidth={2} aria-hidden />
-                )}
-              </motion.span>
-            </AnimatePresence>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={`${aiPanelOpen ? "hide" : "show"}-${language}`}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.2 }}
-                className="inline-block"
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.15 }}
+                className="inline-block leading-none"
               >
                 {aiPanelOpen
-                  ? AI_PANEL_TOGGLE_LABEL[language].hide
-                  : AI_PANEL_TOGGLE_LABEL[language].show}
+                  ? AI_PANEL_LABEL[language].open
+                  : AI_PANEL_LABEL[language].closed}
               </motion.span>
             </AnimatePresence>
           </button>
 
-          <div className="flex rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-0.5">
+          <span
+            className="h-[18px] w-px shrink-0 bg-[var(--border)]"
+            aria-hidden
+          />
+
+          <div className="flex shrink-0 rounded-[8px] border border-[var(--border)] bg-[color-mix(in_srgb,var(--bg-elevated)_80%,transparent)] p-[3px]">
             {(["ru", "kz"] as const).map((lang) => (
               <button
                 key={lang}
                 type="button"
                 onClick={() => onLanguageChange(lang)}
-                className={`rounded-[6px] px-3 py-1.5 font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-all duration-150 ${
+                className={`cursor-pointer rounded-[6px] border-none px-2.5 py-1 font-[family:var(--font-jetbrains-mono)] text-[11px] font-medium transition-all duration-150 ease-in-out ${
                   language === lang
-                    ? "bg-[#0f2040] text-[#f1f5f9]"
-                    : "text-[#334155] hover:text-[#64748b]"
+                    ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                    : "bg-transparent text-[var(--text-muted)]"
                 }`}
               >
                 {LANG_LABEL[lang]}
               </button>
             ))}
           </div>
-
-          <div className="flex flex-col items-end gap-0.5">
-            <div className="flex rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-0.5">
-              <button
-                type="button"
-                onClick={() => onAIModeChange("openai")}
-                className={`flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-all duration-150 ${
-                  aiMode === "openai"
-                    ? "bg-[rgba(59,130,246,0.2)] text-[#93c5fd]"
-                    : "text-[#334155] hover:text-[#64748b]"
-                }`}
-              >
-                <Cloud size={16} className="shrink-0" strokeWidth={2} />
-                Облако
-              </button>
-              <button
-                type="button"
-                onClick={() => onAIModeChange("ollama")}
-                className={`flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 font-[family:var(--font-space-grotesk)] text-[12px] font-medium transition-all duration-150 ${
-                  aiMode === "ollama"
-                    ? "bg-[rgba(139,92,246,0.2)] text-[#c4b5fd]"
-                    : "text-[#334155] hover:text-[#64748b]"
-                }`}
-              >
-                <Monitor size={16} className="shrink-0" strokeWidth={2} />
-                Локально
-              </button>
-            </div>
-            <span className="font-[family:var(--font-jetbrains-mono)] text-[9px] leading-tight text-[#64748b]">
-              {aiMode === "openai" ? "GPT-4o mini" : "Qwen 2.5 3B"}
-            </span>
-          </div>
-
-          <p className="font-[family:var(--font-jetbrains-mono)] text-[10px] tabular-nums leading-tight text-[#334155]">
-            Обновлено {timeStr}
-          </p>
         </div>
       </div>
     </header>
