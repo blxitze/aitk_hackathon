@@ -1,6 +1,6 @@
 """Pydantic request/response schemas."""
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -8,18 +8,20 @@ from pydantic import BaseModel, Field
 class AnalyzeRequest(BaseModel):
     scenario: str
     metrics: dict[str, Any]
-    mode: Literal["openai", "ollama"] = "openai"
+    mode: Optional[Literal["openai", "ollama"]] = None
     language: Literal["ru", "kz"] = "ru"
 
 
 class AIResponse(BaseModel):
     what_happening: str
     critical_level: str  # "Low" | "Medium" | "High"
+    critical_reasoning: Optional[str] = None
     actions: list[str]
     reasoning: str
+    warnings: list[str] = Field(default_factory=list)
     confidence: str
     confidence_basis: str
-    error: Optional[str] = None
+    error: Optional[Union[str, bool]] = None
 
 
 class TransportMetrics(BaseModel):
@@ -72,3 +74,17 @@ class MetricsResponse(BaseModel):
     alerts: list[AlertItem]
     correlation: CorrelationBlock
     data_sources: DataSourcesBlock
+
+
+class ExportMetricsPayload(BaseModel):
+    transport: TransportMetrics
+    ecology: EcologyMetrics
+
+
+class ExportRequest(BaseModel):
+    scenario: str
+    has_live_data: bool
+    metrics: ExportMetricsPayload
+    alerts: list[AlertItem]
+    ai_insight: AIResponse
+    ai_model: str

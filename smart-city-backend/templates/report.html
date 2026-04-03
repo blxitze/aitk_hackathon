@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── PAGE SETUP ── */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* ── COVER HEADER ── */
+  .cover-header {
+    background: #080c14;
+    color: white;
+    padding: 48px 52px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #22c55e, #f59e0b);
+  }
+
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #64748b;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .header-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    font-weight: 300;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-scenario-normal { background: #dcfce7; color: #166534; }
+  .badge-scenario-rush_hour { background: #fef9c3; color: #854d0e; }
+  .badge-scenario-emergency { background: #fee2e2; color: #991b1b; }
+  .badge-scenario-morning_peak { background: #fef9c3; color: #854d0e; }
+  .badge-scenario-night { background: #e0e7ff; color: #3730a3; }
+  .badge-time { background: #1e293b; color: #94a3b8; }
+  .badge-live { background: #dcfce7; color: #166534; }
+
+  /* ── CONTENT AREA ── */
+  .content {
+    padding: 40px 52px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 36px;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  /* ── KPI GRID ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 16px;
+    position: relative;
+  }
+
+  .kpi-card.status-high { border-left: 4px solid #ef4444; }
+  .kpi-card.status-medium { border-left: 4px solid #f59e0b; }
+  .kpi-card.status-low { border-left: 4px solid #22c55e; }
+  .kpi-card.status-good { border-left: 4px solid #22c55e; }
+  .kpi-card.status-moderate { border-left: 4px solid #f59e0b; }
+  .kpi-card.status-unhealthy { border-left: 4px solid #ef4444; }
+
+  .kpi-label {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1;
+  }
+
+  .kpi-unit {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: 4px;
+  }
+
+  .kpi-status {
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .kpi-status.high, .kpi-status.unhealthy { color: #ef4444; }
+  .kpi-status.medium, .kpi-status.moderate { color: #f59e0b; }
+  .kpi-status.low, .kpi-status.good { color: #22c55e; }
+
+  /* ── ALERTS ── */
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+
+  .alert-high { background: #fef2f2; border-left: 3px solid #ef4444; }
+  .alert-medium { background: #fffbeb; border-left: 3px solid #f59e0b; }
+  .alert-low { background: #f0fdf4; border-left: 3px solid #22c55e; }
+
+  .alert-level {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    min-width: 48px;
+    padding-top: 1px;
+  }
+
+  .alert-high .alert-level { color: #ef4444; }
+  .alert-medium .alert-level { color: #f59e0b; }
+  .alert-low .alert-level { color: #22c55e; }
+
+  .alert-text { font-size: 12px; color: #1e293b; }
+  .alert-time { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #94a3b8; margin-left: auto; }
+
+  /* ── AI INSIGHT BOX ── */
+  .ai-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ai-box-header {
+    background: #0f172a;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ai-box-header-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .ai-box-header-model {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #64748b;
+    margin-left: auto;
+  }
+
+  .ai-box-body {
+    padding: 24px;
+  }
+
+  .ai-section {
+    margin-bottom: 20px;
+  }
+
+  .ai-section:last-child { margin-bottom: 0; }
+
+  .ai-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  .ai-section-text {
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.7;
+  }
+
+  .critical-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .critical-High { background: #fee2e2; color: #991b1b; }
+  .critical-Medium { background: #fef9c3; color: #854d0e; }
+  .critical-Low { background: #dcfce7; color: #166534; }
+
+  .action-list {
+    list-style: none;
+    margin-top: 8px;
+  }
+
+  .action-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12px;
+    color: #1e293b;
+  }
+
+  .action-item:last-child { border-bottom: none; }
+
+  .action-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #38bdf8;
+    font-weight: 700;
+    min-width: 20px;
+    padding-top: 1px;
+  }
+
+  .warning-list {
+    margin-top: 8px;
+  }
+
+  .warning-item {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: #92400e;
+    background: #fffbeb;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+
+  .confidence-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 8px;
+  }
+
+  .confidence-item {
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .confidence-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  /* ── FOOTER ── */
+  .report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 10px;
+    color: #94a3b8;
+  }
+
+  .footer-right {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #cbd5e1;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover-header">
+  <div class="header-meta">Smart City AI Dashboard · Аналитический отчёт</div>
+  <div class="header-title">Городская сводка — Алматы</div>
+  <div class="header-subtitle">Автоматически сформировано системой Smart City AI Dashboard</div>
+  <div class="header-badges">
+    <span class="badge badge-scenario-{{ scenario }}">
+      {{ scenario_label }}
+    </span>
+    <span class="badge badge-time">{{ generated_at }}</span>
+    {% if has_live_data %}
+    <span class="badge badge-live">● LIVE данные</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- KPI SECTION -->
+  <div class="section">
+    <div class="section-label">Ключевые показатели</div>
+    <div class="kpi-grid">
+      <div class="kpi-card status-{{ transport.status }}">
+        <div class="kpi-label">Индекс трафика</div>
+        <div class="kpi-value">{{ transport.traffic_index }}<span class="kpi-unit">/ 100</span></div>
+        <div class="kpi-status {{ transport.status }}">{{ transport.status | upper }}</div>
+      </div>
+      <div class="kpi-card status-{{ speed_status }}">
+        <div class="kpi-label">Средняя скорость</div>
+        <div class="kpi-value">{{ transport.avg_speed }}<span class="kpi-unit">км/ч</span></div>
+        <div class="kpi-status {{ speed_status }}">{{ speed_status | upper }}</div>
+      </div>
+      <div class="kpi-card status-{{ incident_status }}">
+        <div class="kpi-label">Инцидентов</div>
+        <div class="kpi-value">{{ transport.incidents }}<span class="kpi-unit">шт</span></div>
+        <div class="kpi-status {{ incident_status }}">{{ incident_status | upper }}</div>
+      </div>
+      <div class="kpi-card status-{{ ecology.status }}">
+        <div class="kpi-label">Качество воздуха (AQI)</div>
+        <div class="kpi-value">{{ ecology.aqi }}<span class="kpi-unit">AQI</span></div>
+        <div class="kpi-status {{ ecology.status }}">{{ ecology.status | upper }}</div>
+      </div>
+      <div class="kpi-card status-low">
+        <div class="kpi-label">CO₂</div>
+        <div class="kpi-value">{{ ecology.co2 }}<span class="kpi-unit">ppm</span></div>
+        <div class="kpi-status low">НОРМА</div>
+      </div>
+      <div class="kpi-card status-low">
+        <div class="kpi-label">Температура</div>
+        <div class="kpi-value">{{ ecology.temperature }}<span class="kpi-unit">°C</span></div>
+        <div class="kpi-status low">НОРМА</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTS SECTION -->
+  {% if alerts %}
+  <div class="section">
+    <div class="section-label">Активные предупреждения</div>
+    {% for alert in alerts %}
+    <div class="alert-item alert-{{ alert.level }}">
+      <span class="alert-level">{{ alert.level }}</span>
+      <span class="alert-text">{{ alert.message }}</span>
+      <span class="alert-time">{{ alert.time }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- AI INSIGHT SECTION -->
+  <div class="section">
+    <div class="section-label">AI Анализ и рекомендации</div>
+    <div class="ai-box">
+      <div class="ai-box-header">
+        <span>🧠</span>
+        <span class="ai-box-header-title">Smart City AI Dashboard · Аналитическое заключение</span>
+        <span class="ai-box-header-model">{{ ai_model }}</span>
+      </div>
+      <div class="ai-box-body">
+
+        <div class="ai-section">
+          <div class="ai-section-title">Что происходит</div>
+          <div class="ai-section-text">{{ ai.what_happening }}</div>
+        </div>
+
+        <div class="ai-section">
+          <div class="ai-section-title">Уровень критичности</div>
+          <span class="critical-badge critical-{{ ai.critical_level }}">
+            {{ ai.critical_level }}
+          </span>
+          <div class="ai-section-text" style="margin-top: 8px;">
+            {{ ai.critical_reasoning }}
+          </div>
+        </div>
+
+        <div class="ai-section">
+          <div class="ai-section-title">Рекомендуемые действия</div>
+          <ul class="action-list">
+            {% for action in ai.actions %}
+            <li class="action-item">
+              <span class="action-num">0{{ loop.index }}</span>
+              <span>{{ action }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="ai-section">
+          <div class="ai-section-title">Причинно-следственный анализ</div>
+          <div class="ai-section-text">{{ ai.reasoning }}</div>
+        </div>
+
+        {% if ai.warnings %}
+        <div class="ai-section">
+          <div class="ai-section-title">Предупреждения</div>
+          <div class="warning-list">
+            {% for warning in ai.warnings %}
+            <div class="warning-item">⚠ {{ warning }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="ai-section">
+          <div class="ai-section-title">Достоверность</div>
+          <div class="confidence-row">
+            <div class="confidence-item">
+              Уверенность: <span class="confidence-value">{{ ai.confidence }}</span>
+            </div>
+            <div class="confidence-item">
+              Основано на: <span class="confidence-value">{{ ai.confidence_basis }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="report-footer">
+    <div class="footer-left">
+      Smart City AI Dashboard · Алматы, Казахстан<br>
+      Данные носят аналитический характер и предназначены для поддержки управленческих решений
+    </div>
+    <div class="footer-right">
+      Сформировано: {{ generated_at }}<br>
+      {{ ai_model }}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

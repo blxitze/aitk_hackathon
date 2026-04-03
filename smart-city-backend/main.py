@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import analyze, metrics
+from routers.export import router as export_router
 
 app = FastAPI(title="Smart City Almaty API")
 
@@ -19,6 +20,7 @@ app.add_middleware(
 
 app.include_router(metrics.router)
 app.include_router(analyze.router)
+app.include_router(export_router)
 
 
 @app.get("/health")

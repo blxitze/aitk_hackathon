@@ -128,10 +128,10 @@ async def get_metrics(scenario: str = "normal") -> MetricsResponse:
     incidents = int(transport_in["incidents"])
     co2 = float(eco_base["co2"])
 
-    # Emergency: hardcoded extremes only. All other scenarios (normal, rush_hour,
-    # morning_peak, night) use live weather + AQI with mock fallback inside fetch_*.
+    # Emergency: AQI/CO2 extremes fixed; temperature = live weather + heat surge (dynamic).
     if scen == "emergency":
-        temperature = 34.0
+        weather = await fetch_weather_almaty()
+        temperature = round(float(weather["temperature"]) + 8, 1)
         aqi = 210
         weather_src = "emergency_override"
         aqi_src = "emergency_override"
