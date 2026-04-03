@@ -11,13 +11,28 @@ const DIVIDER = "border-t border-[rgba(255,255,255,0.06)] pt-6";
 
 const DEFAULT_MODEL_LABEL = "GPT-4o mini";
 
-function criticalBadgeStyles(level: AIResponse["critical_level"]): {
+/** LLM may return PascalCase, lowercase, or Russian labels — normalize before styling. */
+function normalizeCriticalLevel(
+  level: string | undefined | null
+): AIResponse["critical_level"] {
+  if (level == null || typeof level !== "string") return "Low";
+  const t = level.trim().toLowerCase();
+  if (t === "high" || t === "высокая" || t.startsWith("высок"))
+    return "High";
+  if (t === "medium" || t === "средняя" || t.startsWith("средн"))
+    return "Medium";
+  if (t === "low" || t === "низкая" || t.startsWith("низк")) return "Low";
+  return "Low";
+}
+
+function criticalBadgeStyles(level: string | undefined | null): {
   bg: string;
   color: string;
   border: string;
   label: string;
 } {
-  switch (level) {
+  const normalized = normalizeCriticalLevel(level);
+  switch (normalized) {
     case "High":
       return {
         bg: "rgba(239,68,68,0.15)",
@@ -33,6 +48,7 @@ function criticalBadgeStyles(level: AIResponse["critical_level"]): {
         label: "Средняя",
       };
     case "Low":
+    default:
       return {
         bg: "rgba(16,185,129,0.15)",
         color: "#10b981",
@@ -42,7 +58,7 @@ function criticalBadgeStyles(level: AIResponse["critical_level"]): {
   }
 }
 
-function CriticalBadge({ level }: { level: AIResponse["critical_level"] }) {
+function CriticalBadge({ level }: { level: string | undefined | null }) {
   const b = criticalBadgeStyles(level);
   return (
     <span
