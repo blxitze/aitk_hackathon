@@ -18,6 +18,8 @@ interface HourlyPoint {
   avg_speed: number;
   incidents: number;
   co2: number;
+  /** Per-hour AQI when provided by API; otherwise charts may derive a proxy. */
+  aqi?: number;
 }
 
 interface Alert {
@@ -84,6 +86,16 @@ export interface ScenarioSwitcherProps {
   current: string;
   onChange: (scenario: string) => void;
   disabled?: boolean;
+}
+
+export interface ChartSectionProps {
+  chartData: HourlyPoint[];
+  currentScenario: string;
+}
+
+export interface AlertsBlockProps {
+  alerts: Alert[];
+  loading?: boolean;
 }
 
 export type {
