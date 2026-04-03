@@ -1,4 +1,9 @@
-import type { AIResponse, MetricsResponse } from "@/types";
+import type {
+  AIResponse,
+  AiMode,
+  MetricsResponse,
+  UiLanguage,
+} from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -13,8 +18,8 @@ export async function fetchMetrics(scenario: string): Promise<MetricsResponse> {
 export async function fetchAnalysis(
   scenario: string,
   metrics: MetricsResponse,
-  mode: string,
-  language: string
+  mode: AiMode,
+  language: UiLanguage
 ): Promise<AIResponse> {
   const res = await fetch(`${BASE_URL}/api/analyze`, {
     method: "POST",

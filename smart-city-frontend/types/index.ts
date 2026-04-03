@@ -98,6 +98,24 @@ export interface AlertsBlockProps {
   loading?: boolean;
 }
 
+export interface AIInsightProps {
+  data: AIResponse | null;
+  loading: boolean;
+  error: string | null;
+  model?: string;
+}
+
+export type AiMode = "openai" | "ollama";
+
+export type UiLanguage = "ru" | "kz";
+
+export interface HeaderProps {
+  aiMode: AiMode;
+  onAiModeChange: (mode: AiMode) => void;
+  language: UiLanguage;
+  onLanguageChange: (lang: UiLanguage) => void;
+}
+
 export type {
   TransportMetrics,
   EcologyMetrics,

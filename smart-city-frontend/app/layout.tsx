@@ -26,8 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceGrotesk.className}`}
+      lang="ru"
+      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceGrotesk.className} bg-[#020817]`}
     >
       <body className="min-h-screen bg-[#020817] antialiased">{children}</body>
     </html>

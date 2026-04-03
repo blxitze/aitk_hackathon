@@ -67,3 +67,52 @@
 .alert-row-pulse-inner {
   animation: alertPulse 2s ease-in-out infinite;
 }
+
+@keyframes violetPulse {
+  0%,
+  100% {
+    border-left-color: #8b5cf6;
+  }
+  50% {
+    border-left-color: rgba(139, 92, 246, 0.3);
+  }
+}
+
+.ai-insight-loading-border {
+  animation: violetPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-panel-fade-in {
+  animation: panelFadeIn 400ms ease-out forwards;
+}
+
+@keyframes insight-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.insight-shimmer {
+  background: linear-gradient(
+    90deg,
+    #0f2040 0%,
+    #1e3a5f 50%,
+    #0f2040 100%
+  );
+  background-size: 200% 100%;
+  animation: insight-shimmer 1.5s ease-in-out infinite;
+}
