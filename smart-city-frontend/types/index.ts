@@ -60,6 +60,26 @@ interface AIResponse {
   error?: string;
 }
 
+export type KPICardStatus =
+  | "low"
+  | "medium"
+  | "high"
+  | "good"
+  | "moderate"
+  | "unhealthy";
+
+export type KPICardTrend = "up" | "down" | "stable";
+
+export interface KPICardProps {
+  label: string;
+  value: number | string;
+  unit: string;
+  status: KPICardStatus;
+  trend?: KPICardTrend;
+  loading?: boolean;
+  animate?: boolean;
+}
+
 export type {
   TransportMetrics,
   EcologyMetrics,

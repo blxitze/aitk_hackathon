@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes kpi-card-border-pulse {
+  0%,
+  100% {
+    border-left-color: var(--kpi-status-color);
+  }
+  50% {
+    border-left-color: color-mix(
+      in srgb,
+      var(--kpi-status-color) 30%,
+      transparent
+    );
+  }
+}
+
+.kpi-card-border-pulse {
+  animation: kpi-card-border-pulse 1.5s ease-in-out infinite;
+}
