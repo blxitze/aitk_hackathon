@@ -80,6 +80,12 @@ export interface KPICardProps {
   animate?: boolean;
 }
 
+export interface ScenarioSwitcherProps {
+  current: string;
+  onChange: (scenario: string) => void;
+  disabled?: boolean;
+}
+
 export type {
   TransportMetrics,
   EcologyMetrics,

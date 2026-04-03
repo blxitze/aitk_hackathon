@@ -19,3 +19,21 @@
 .kpi-card-border-pulse {
   animation: kpi-card-border-pulse 1.5s ease-in-out infinite;
 }
+
+@keyframes scenario-emergency-border-pulse {
+  0%,
+  100% {
+    border-color: var(--scenario-emergency-color);
+  }
+  50% {
+    border-color: color-mix(
+      in srgb,
+      var(--scenario-emergency-color) 30%,
+      transparent
+    );
+  }
+}
+
+.scenario-emergency-border-pulse {
+  animation: scenario-emergency-border-pulse 1.5s ease-in-out infinite;
+}
