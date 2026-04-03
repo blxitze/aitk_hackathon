@@ -111,6 +111,8 @@ export interface AIInsightProps {
   error: string | null;
   model?: string;
   onClose: () => void;
+  /** Used with data to re-run entrance animation on new scenario. */
+  scenario: string;
 }
 
 export type AiMode = "openai" | "ollama";

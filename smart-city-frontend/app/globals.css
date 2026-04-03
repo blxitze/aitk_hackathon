@@ -68,33 +68,26 @@
   animation: alertPulse 2s ease-in-out infinite;
 }
 
-@keyframes violetPulse {
-  0%,
-  100% {
-    border-left-color: #8b5cf6;
+@keyframes violetFlow {
+  0% {
+    border-left-color: rgba(139, 92, 246, 0.3);
   }
   50% {
+    border-left-color: rgba(139, 92, 246, 1);
+  }
+  100% {
     border-left-color: rgba(139, 92, 246, 0.3);
   }
 }
 
 .ai-insight-loading-border {
-  animation: violetPulse 1.5s ease-in-out infinite;
+  animation: violetFlow 1.2s ease-in-out infinite;
 }
 
-@keyframes panelFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+@media (max-width: 767px) {
+  .ai-dashboard-motion-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ai-panel-fade-in {
-  animation: panelFadeIn 400ms ease-out forwards;
 }
 
 @keyframes insight-shimmer {

@@ -7,6 +7,7 @@ import {
   Monitor,
   PanelRightClose,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { HeaderProps, UiLanguage } from "@/types";
 
@@ -110,14 +111,36 @@ export default function Header({
                   }
             }
           >
-            {aiPanelOpen ? (
-              <PanelRightClose size={16} className="shrink-0" strokeWidth={2} />
-            ) : (
-              <BrainCircuit size={16} className="shrink-0" strokeWidth={2} />
-            )}
-            {aiPanelOpen
-              ? AI_PANEL_TOGGLE_LABEL[language].hide
-              : AI_PANEL_TOGGLE_LABEL[language].show}
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={aiPanelOpen ? "icon-hide" : "icon-show"}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.2 }}
+                className="inline-flex shrink-0"
+              >
+                {aiPanelOpen ? (
+                  <PanelRightClose size={16} strokeWidth={2} aria-hidden />
+                ) : (
+                  <BrainCircuit size={16} strokeWidth={2} aria-hidden />
+                )}
+              </motion.span>
+            </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={`${aiPanelOpen ? "hide" : "show"}-${language}`}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.2 }}
+                className="inline-block"
+              >
+                {aiPanelOpen
+                  ? AI_PANEL_TOGGLE_LABEL[language].hide
+                  : AI_PANEL_TOGGLE_LABEL[language].show}
+              </motion.span>
+            </AnimatePresence>
           </button>
 
           <div className="flex rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-0.5">

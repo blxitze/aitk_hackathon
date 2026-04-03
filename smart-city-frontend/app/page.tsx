@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AIInsight from "@/components/AIInsight";
 import AlertsBlock from "@/components/AlertsBlock";
@@ -294,14 +295,26 @@ export default function Home() {
   return (
     <main className="min-h-screen px-6 py-6 text-[#f1f5f9]">
       <div className="mx-auto max-w-[1920px]">
-        <div
-          className={`grid grid-cols-1 gap-6 md:items-start md:transition-[grid-template-columns] md:duration-300 md:ease-in-out ${
-            aiPanelOpen
-              ? "md:grid-cols-[minmax(0,65fr)_minmax(0,35fr)]"
-              : "md:grid-cols-1"
-          }`}
+        <motion.div
+          layout
+          className="ai-dashboard-motion-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: aiPanelOpen
+              ? "minmax(0, 65fr) minmax(0, 35fr)"
+              : "minmax(0, 1fr)",
+            gap: "24px",
+            alignItems: "start",
+          }}
+          transition={{
+            layout: { duration: 0.4, ease: [0.23, 1, 0.32, 1] },
+          }}
         >
-          <div className="flex min-w-0 flex-col gap-6">
+          <motion.div
+            layout
+            className="flex min-w-0 flex-col gap-6"
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+          >
             <Header
               aiMode={aiMode}
               onAIModeChange={setAiMode}
@@ -470,22 +483,35 @@ export default function Home() {
               loading={loadingMetrics}
               language={language}
             />
-          </div>
+          </motion.div>
 
-          <aside
-            className={`min-w-0 md:sticky md:top-24 md:h-fit ${
-              aiPanelOpen ? "block" : "hidden"
-            }`}
-          >
-            <AIInsight
-              data={aiData}
-              loading={loadingAI}
-              error={error}
-              model={aiMode === "openai" ? "GPT-4o mini" : "Qwen 2.5 3B"}
-              onClose={() => setAiPanelOpen(false)}
-            />
-          </aside>
-        </div>
+          <AnimatePresence mode="wait">
+            {aiPanelOpen ? (
+              <motion.div
+                key="ai-panel"
+                initial={{ opacity: 0, x: 60, scale: 0.97 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 60, scale: 0.97 }}
+                transition={{
+                  duration: 0.45,
+                  ease: [0.23, 1, 0.32, 1],
+                  opacity: { duration: 0.3 },
+                }}
+                className="min-w-0 self-start"
+                style={{ position: "sticky", top: "88px" }}
+              >
+                <AIInsight
+                  data={aiData}
+                  loading={loadingAI}
+                  error={error}
+                  model={aiMode === "openai" ? "GPT-4o mini" : "Qwen 2.5 3B"}
+                  onClose={() => setAiPanelOpen(false)}
+                  scenario={scenario}
+                />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </main>
   );

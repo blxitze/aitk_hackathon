@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, Brain, ChevronRight, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMemo } from "react";
 import type { AIInsightProps, AIResponse } from "@/types";
 
@@ -10,6 +11,9 @@ const SECTION_LABEL =
 const DIVIDER = "border-t border-[rgba(255,255,255,0.06)] pt-6";
 
 const DEFAULT_MODEL_LABEL = "GPT-4o mini";
+
+const PANEL_GLOW =
+  "0 0 0 1px rgba(139,92,246,0.15), -8px 0 32px rgba(139,92,246,0.08)";
 
 /** LLM may return PascalCase, lowercase, or Russian labels — normalize before styling. */
 function normalizeCriticalLevel(
@@ -100,6 +104,7 @@ export default function AIInsight({
   error,
   model,
   onClose,
+  scenario,
 }: AIInsightProps) {
   const modelLabel = model ?? DEFAULT_MODEL_LABEL;
 
@@ -108,6 +113,8 @@ export default function AIInsight({
     [data]
   );
 
+  const contentAnimKey = `${data?.critical_level ?? "none"}-${scenario}-${panelKey}`;
+
   return (
     <div
       className={`flex min-h-[600px] flex-col rounded-[12px] border-l-[3px] border-solid bg-[#0a1628] p-6 ${
@@ -115,6 +122,7 @@ export default function AIInsight({
       }`}
       style={{
         borderLeftColor: loading ? undefined : "#8b5cf6",
+        boxShadow: PANEL_GLOW,
       }}
     >
       <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
@@ -148,98 +156,158 @@ export default function AIInsight({
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex flex-1 flex-col">
-          <div className="space-y-3">
-            <div className="h-4 w-full animate-pulse rounded bg-[#0f2040]" />
-            <div className="h-4 w-[80%] animate-pulse rounded bg-[#0f2040]" />
-            <div className="h-4 w-[60%] animate-pulse rounded bg-[#0f2040]" />
-            <div className="h-4 w-[90%] animate-pulse rounded bg-[#0f2040]" />
-          </div>
-          <p className="mt-6 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-snug text-[#64748b]">
-            Анализирую...
-          </p>
-        </div>
-      ) : error ? (
-        <div className="flex flex-1 flex-col">
-          <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[#ef4444]">
-            <AlertCircle
-              size={18}
-              className="mt-0.5 shrink-0 text-[#ef4444]"
-              strokeWidth={2}
-              aria-hidden
-            />
-            Ошибка анализа ИИ
-          </p>
-          <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] leading-relaxed text-[#64748b]">
-            {error}
-          </p>
-        </div>
-      ) : data ? (
-        <div key={panelKey} className="ai-panel-fade-in flex flex-1 flex-col">
-          <section>
-            <p className={SECTION_LABEL}>ЧТО ПРОИСХОДИТ</p>
-            <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[15px] leading-[1.6] text-[#f1f5f9]">
-              {data.what_happening}
-            </p>
-          </section>
-
-          <section className={`${DIVIDER} mt-6`}>
-            <p className={SECTION_LABEL}>КРИТИЧНОСТЬ</p>
-            <div className="mt-4 flex justify-center">
-              <CriticalBadge level={data.critical_level} />
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
+        className="flex flex-1 flex-col"
+      >
+        {loading ? (
+          <div className="flex flex-1 flex-col">
+            <div className="space-y-3">
+              <div className="h-4 w-full animate-pulse rounded bg-[#0f2040]" />
+              <div className="h-4 w-[80%] animate-pulse rounded bg-[#0f2040]" />
+              <div className="h-4 w-[60%] animate-pulse rounded bg-[#0f2040]" />
+              <div className="h-4 w-[90%] animate-pulse rounded bg-[#0f2040]" />
             </div>
-          </section>
-
-          <section className={`${DIVIDER} mt-6`}>
-            <p className={SECTION_LABEL}>ЧТО ДЕЛАТЬ</p>
-            <ul className="mt-2 list-none p-0">
-              {data.actions.slice(0, 3).map((action, i) => (
-                <li
-                  key={`${i}-${action.slice(0, 32)}`}
-                  className="border-b border-[rgba(255,255,255,0.04)] py-1.5 last:border-b-0"
-                >
-                  <div className="flex gap-2 leading-[1.5]">
-                    <ChevronRight
-                      size={14}
-                      className="mt-0.5 shrink-0 text-[#8b5cf6]"
-                      strokeWidth={2}
-                      aria-hidden
-                    />
-                    <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[#f1f5f9]">
-                      {action}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className={`${DIVIDER} mt-6`}>
-            <p className={SECTION_LABEL}>ОБОСНОВАНИЕ</p>
-            <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-[1.6] text-[#64748b]">
-              {data.reasoning}
+            <p className="mt-6 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-snug text-[#64748b]">
+              Анализирую...
             </p>
-          </section>
-
-          <section className={`${DIVIDER} mt-6`}>
-            <p className={SECTION_LABEL}>УВЕРЕННОСТЬ</p>
-            <p
-              className="mt-2 font-[family:var(--font-jetbrains-mono)] text-[13px] font-medium"
-              style={{ color: confidenceColor(data.confidence) }}
+          </div>
+        ) : error ? (
+          <div className="flex flex-1 flex-col">
+            <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[#ef4444]">
+              <AlertCircle
+                size={18}
+                className="mt-0.5 shrink-0 text-[#ef4444]"
+                strokeWidth={2}
+                aria-hidden
+              />
+              Ошибка анализа ИИ
+            </p>
+            <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] leading-relaxed text-[#64748b]">
+              {error}
+            </p>
+          </div>
+        ) : data ? (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={contentAnimKey}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-1 flex-col"
             >
-              {data.confidence}
-            </p>
-            <p className="mt-1 font-[family:var(--font-space-grotesk)] text-[12px] leading-snug text-[#64748b]">
-              {data.confidence_basis}
-            </p>
-          </section>
-        </div>
-      ) : (
-        <p className="font-[family:var(--font-space-grotesk)] text-[13px] text-[#64748b]">
-          Нет данных ИИ
-        </p>
-      )}
+              <motion.section
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.2,
+                  ease: "easeOut",
+                }}
+              >
+                <p className={SECTION_LABEL}>ЧТО ПРОИСХОДИТ</p>
+                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[15px] leading-[1.6] text-[#f1f5f9]">
+                  {data.what_happening}
+                </p>
+              </motion.section>
+
+              <motion.section
+                className={`${DIVIDER} mt-6`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.28,
+                  ease: "easeOut",
+                }}
+              >
+                <p className={SECTION_LABEL}>КРИТИЧНОСТЬ</p>
+                <div className="mt-4 flex justify-center">
+                  <CriticalBadge level={data.critical_level} />
+                </div>
+              </motion.section>
+
+              <motion.section
+                className={`${DIVIDER} mt-6`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.36,
+                  ease: "easeOut",
+                }}
+              >
+                <p className={SECTION_LABEL}>ЧТО ДЕЛАТЬ</p>
+                <ul className="mt-2 list-none p-0">
+                  {data.actions.slice(0, 3).map((action, i) => (
+                    <li
+                      key={`${i}-${action.slice(0, 32)}`}
+                      className="border-b border-[rgba(255,255,255,0.04)] py-1.5 last:border-b-0"
+                    >
+                      <div className="flex gap-2 leading-[1.5]">
+                        <ChevronRight
+                          size={14}
+                          className="mt-0.5 shrink-0 text-[#8b5cf6]"
+                          strokeWidth={2}
+                          aria-hidden
+                        />
+                        <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[#f1f5f9]">
+                          {action}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </motion.section>
+
+              <motion.section
+                className={`${DIVIDER} mt-6`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.44,
+                  ease: "easeOut",
+                }}
+              >
+                <p className={SECTION_LABEL}>ОБОСНОВАНИЕ</p>
+                <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-[1.6] text-[#64748b]">
+                  {data.reasoning}
+                </p>
+              </motion.section>
+
+              <motion.section
+                className={`${DIVIDER} mt-6`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.52,
+                  ease: "easeOut",
+                }}
+              >
+                <p className={SECTION_LABEL}>УВЕРЕННОСТЬ</p>
+                <p
+                  className="mt-2 font-[family:var(--font-jetbrains-mono)] text-[13px] font-medium"
+                  style={{ color: confidenceColor(data.confidence) }}
+                >
+                  {data.confidence}
+                </p>
+                <p className="mt-1 font-[family:var(--font-space-grotesk)] text-[12px] leading-snug text-[#64748b]">
+                  {data.confidence_basis}
+                </p>
+              </motion.section>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <p className="font-[family:var(--font-space-grotesk)] text-[13px] text-[#64748b]">
+            Нет данных ИИ
+          </p>
+        )}
+      </motion.div>
     </div>
   );
 }
