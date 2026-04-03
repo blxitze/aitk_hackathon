@@ -16,7 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Smart City Almaty",
-  description: "AI-powered city management dashboard for Almaty, Kazakhstan",
+  description:
+    "Панель управления с ИИ для городского управления: Алматы, Казахстан",
 };
 
 export default function RootLayout({

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import type { CSSProperties } from "react";
+import { Car, Wind } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   CartesianGrid,
   Line,
@@ -12,7 +13,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { ChartSectionProps, HourlyPoint } from "@/types";
+import { translateScenario } from "@/lib/utils";
+import type { ChartSectionProps, HourlyPoint, UiLanguage } from "@/types";
 
 const GRID_STYLE = {
   stroke: "rgba(255,255,255,0.04)",
@@ -47,17 +49,85 @@ const TOOLTIP_ITEM_STYLE: CSSProperties = {
 
 const X_TICK_HOURS = [0, 4, 8, 12, 16, 20];
 
+const CHART_LABELS: Record<
+  UiLanguage,
+  {
+    transport: string;
+    ecology: string;
+    lagNote: string;
+    now: string;
+    emptyState: string;
+    legendTraffic: string;
+    legendIncidents: string;
+    legendAqi: string;
+    legendCo2: string;
+    tooltipHour: string;
+  }
+> = {
+  ru: {
+    transport: "Транспортная нагрузка",
+    ecology: "Качество воздуха",
+    lagNote: "* Экология следует за трафиком с задержкой ~1 час",
+    now: "сейчас",
+    emptyState: "Нет данных для графиков",
+    legendTraffic: "Индекс трафика",
+    legendIncidents: "Инциденты ×4",
+    legendAqi: "ИКВ",
+    legendCo2: "CO₂ норм.",
+    tooltipHour: "Час",
+  },
+  kz: {
+    transport: "Көлік жүктемесі",
+    ecology: "Ауа сапасы",
+    lagNote: "* Экология трафиктен ~1 сағат кешігіп өзгереді",
+    now: "қазір",
+    emptyState: "Графиктер үшін дерек жоқ",
+    legendTraffic: "Қозғалыс индексі",
+    legendIncidents: "Оқиғалар ×4",
+    legendAqi: "АКИ",
+    legendCo2: "CO₂ норм.",
+    tooltipHour: "Сағат",
+  },
+};
+
+function tooltipMetricLookup(lang: UiLanguage): Record<string, string> {
+  const L = CHART_LABELS[lang];
+  const R = CHART_LABELS.ru;
+  const m: Record<string, string> = {
+    traffic_index: L.legendTraffic,
+    incidentsScaled: L.legendIncidents,
+    aqiResolved: L.legendAqi,
+    co2Normalized: L.legendCo2,
+    incidents: L.legendIncidents,
+    aqi: L.legendAqi,
+    co2: L.legendCo2,
+    temperature: "Температура",
+    avg_speed: lang === "kz" ? "Жылдамдық" : "Скорость",
+  };
+  m[R.legendTraffic] = L.legendTraffic;
+  m[R.legendIncidents] = L.legendIncidents;
+  m[R.legendAqi] = L.legendAqi;
+  m[R.legendCo2] = L.legendCo2;
+  m[L.legendTraffic] = L.legendTraffic;
+  m[L.legendIncidents] = L.legendIncidents;
+  m[L.legendAqi] = L.legendAqi;
+  m[L.legendCo2] = L.legendCo2;
+  m["ИКВ"] = L.legendAqi;
+  return m;
+}
+
 function normalizeScenario(scenario: string): string {
   return scenario.toLowerCase().replace(/-/g, "_");
 }
 
 function referenceHourForScenario(scenario: string): number {
   const s = normalizeScenario(scenario);
+  if (s === "morning_peak") return 8;
+  if (s === "night") return 23;
   if (s === "rush_hour" || s === "emergency") return 18;
   return 13;
 }
 
-/** Proxy hourly AQI when API points omit `aqi` (~1h lag vs traffic). */
 function estimateHourlyAqi(points: HourlyPoint[], hour: number): number {
   const byHour = new Map(points.map((p) => [p.hour, p]));
   const lagHour = Math.max(0, hour - 1);
@@ -84,24 +154,60 @@ function buildRows(chartData: HourlyPoint[]): ChartRow[] {
 export default function ChartSection({
   chartData,
   currentScenario,
+  language = "ru",
 }: ChartSectionProps) {
+  const lang: UiLanguage = language;
+  const L = CHART_LABELS[lang];
+  const metricLookup = useMemo(() => tooltipMetricLookup(lang), [lang]);
+
+  const chartTooltipFormatter = useCallback(
+    (value: unknown, name: unknown): [ReactNode, ReactNode] => {
+      const key = String(name ?? "");
+      const displayName = metricLookup[key] ?? key;
+      const v = Array.isArray(value) ? value[0] : value;
+      return [v as ReactNode, displayName];
+    },
+    [metricLookup]
+  );
+
+  const chartTooltipLabelFormatter = useCallback(
+    (label: unknown): string => {
+      if (label === null || label === undefined) return "";
+      return `${L.tooltipHour} ${label}:00`;
+    },
+    [L.tooltipHour]
+  );
+
   const refHour = referenceHourForScenario(currentScenario);
   const rows = useMemo(() => buildRows(chartData), [chartData]);
+
+  const lineNames = useMemo(
+    () => ({
+      traffic: CHART_LABELS[lang].legendTraffic,
+      incidents: CHART_LABELS[lang].legendIncidents,
+      aqi: CHART_LABELS[lang].legendAqi,
+      co2: CHART_LABELS[lang].legendCo2,
+    }),
+    [lang]
+  );
 
   if (chartData.length === 0) {
     return (
       <div className="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-4 text-center font-[family:var(--font-space-grotesk)] text-[13px] text-[#64748b]">
-        Нет данных для графиков
+        {L.emptyState}
       </div>
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div
+      className="flex w-full flex-col gap-4"
+      aria-label={`${translateScenario(currentScenario, lang)}`}
+    >
       <div className="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-4">
-        <h3 className="mb-3 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[#f1f5f9]">
-          <span className="mr-1.5 text-[13px] leading-none">🚗</span>
-          Транспортная нагрузка
+        <h3 className="mb-3 flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[#f1f5f9]">
+          <Car size={18} className="shrink-0 text-[#f1f5f9]" strokeWidth={2} />
+          {L.transport}
         </h3>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -129,13 +235,15 @@ export default function ChartSection({
                 contentStyle={TOOLTIP_CONTENT_STYLE}
                 labelStyle={TOOLTIP_LABEL_STYLE}
                 itemStyle={TOOLTIP_ITEM_STYLE}
+                formatter={chartTooltipFormatter}
+                labelFormatter={chartTooltipLabelFormatter}
               />
               <ReferenceLine
                 x={refHour}
                 stroke="rgba(255,255,255,0.2)"
                 strokeDasharray="3 3"
                 label={{
-                  value: "сейчас",
+                  value: L.now,
                   position: "top",
                   fill: "#64748b",
                   fontSize: 10,
@@ -145,7 +253,7 @@ export default function ChartSection({
               <Line
                 type="monotone"
                 dataKey="traffic_index"
-                name="traffic_index"
+                name={lineNames.traffic}
                 stroke="#3b82f6"
                 strokeWidth={2}
                 dot={false}
@@ -154,7 +262,7 @@ export default function ChartSection({
               <Line
                 type="monotone"
                 dataKey="incidentsScaled"
-                name="incidents ×4"
+                name={lineNames.incidents}
                 stroke="#f59e0b"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
@@ -165,15 +273,15 @@ export default function ChartSection({
           </ResponsiveContainer>
         </div>
         <div className="mt-3 flex flex-wrap justify-center gap-6 font-[family:var(--font-jetbrains-mono)] text-[11px]">
-          <span className="text-[#3b82f6]">traffic_index</span>
-          <span className="text-[#f59e0b]">incidents ×4</span>
+          <span className="text-[#3b82f6]">{lineNames.traffic}</span>
+          <span className="text-[#f59e0b]">{lineNames.incidents}</span>
         </div>
       </div>
 
       <div className="rounded-[12px] border border-[rgba(255,255,255,0.06)] bg-[#0a1628] p-4">
-        <h3 className="mb-3 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[#f1f5f9]">
-          <span className="mr-1.5 text-[13px] leading-none">🌫</span>
-          Качество воздуха
+        <h3 className="mb-3 flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[14px] font-medium leading-tight text-[#f1f5f9]">
+          <Wind size={18} className="shrink-0 text-[#f1f5f9]" strokeWidth={2} />
+          {L.ecology}
         </h3>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -201,13 +309,15 @@ export default function ChartSection({
                 contentStyle={TOOLTIP_CONTENT_STYLE}
                 labelStyle={TOOLTIP_LABEL_STYLE}
                 itemStyle={TOOLTIP_ITEM_STYLE}
+                formatter={chartTooltipFormatter}
+                labelFormatter={chartTooltipLabelFormatter}
               />
               <ReferenceLine
                 x={refHour}
                 stroke="rgba(255,255,255,0.2)"
                 strokeDasharray="3 3"
                 label={{
-                  value: "сейчас",
+                  value: L.now,
                   position: "top",
                   fill: "#64748b",
                   fontSize: 10,
@@ -217,7 +327,7 @@ export default function ChartSection({
               <Line
                 type="monotone"
                 dataKey="aqiResolved"
-                name="AQI"
+                name={lineNames.aqi}
                 stroke="#8b5cf6"
                 strokeWidth={2}
                 dot={false}
@@ -226,7 +336,7 @@ export default function ChartSection({
               <Line
                 type="monotone"
                 dataKey="co2Normalized"
-                name="CO2 норм."
+                name={lineNames.co2}
                 stroke="#06b6d4"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
@@ -237,11 +347,11 @@ export default function ChartSection({
           </ResponsiveContainer>
         </div>
         <div className="mt-3 flex flex-wrap justify-center gap-6 font-[family:var(--font-jetbrains-mono)] text-[11px]">
-          <span className="text-[#8b5cf6]">AQI</span>
-          <span className="text-[#06b6d4]">CO2 норм.</span>
+          <span className="text-[#8b5cf6]">{lineNames.aqi}</span>
+          <span className="text-[#06b6d4]">{lineNames.co2}</span>
         </div>
         <p className="mt-3 font-[family:var(--font-space-grotesk)] text-[11px] italic leading-snug text-[#334155]">
-          * Экология следует за трафиком с задержкой ~1 час
+          {L.lagNote}
         </p>
       </div>
     </div>

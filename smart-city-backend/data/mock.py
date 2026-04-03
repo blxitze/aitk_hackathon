@@ -98,6 +98,15 @@ def _build_hourly_data() -> list[dict[str, Any]]:
 
 HOURLY_DATA: list[dict[str, Any]] = _build_hourly_data()
 
+# Snapshot hour/minute per scenario (UTC wall-clock for timestamp display).
+# morning_peak: morning rush; night: minimal traffic; normal/rush_hour: midday / evening peak.
+_SCENARIO_CLOCK: dict[str, tuple[int, int]] = {
+    "normal": (13, 0),
+    "rush_hour": (18, 0),
+    "morning_peak": (8, 0),
+    "night": (23, 0),
+}
+
 
 def _iso_timestamp_utc(hour: int, minute: int = 0) -> str:
     now = datetime.now(timezone.utc)
@@ -106,17 +115,13 @@ def _iso_timestamp_utc(hour: int, minute: int = 0) -> str:
 
 def get_scenario(scenario: str) -> dict[str, Any]:
     """
-    Snapshot for normal (13:00), rush_hour (18:00), or emergency (extreme overrides).
-    Ecology temperature/aqi/status are None here — merged later from real API.
+    Snapshot for one of: normal, rush_hour, morning_peak, night, or emergency (extreme overrides).
+    Ecology temperature/aqi/status are None here — merged later from real API (except emergency path in router).
     """
     s = (scenario or "normal").lower().replace("-", "_")
-    if s == "rush_hour":
-        h = 18
-        m = 0
-        row = HOURLY_DATA[h]
-    elif s == "emergency":
-        h = 18
-        m = 45
+
+    if s == "emergency":
+        h, m = 18, 45
         return {
             "timestamp": _iso_timestamp_utc(h, m),
             "scenario": "emergency",
@@ -134,17 +139,17 @@ def get_scenario(scenario: str) -> dict[str, Any]:
             },
             "chart_data": HOURLY_DATA,
         }
-    else:
-        # normal (default)
-        h = 13
-        m = 0
-        row = HOURLY_DATA[h]
 
+    if s not in _SCENARIO_CLOCK:
+        s = "normal"
+
+    h, m = _SCENARIO_CLOCK[s]
+    row = HOURLY_DATA[h]
     ti = int(row["traffic_index"])
-    scenario_name = "rush_hour" if s == "rush_hour" else "normal"
+
     return {
         "timestamp": _iso_timestamp_utc(h, m),
-        "scenario": scenario_name,
+        "scenario": s,
         "transport": {
             "traffic_index": ti,
             "avg_speed": float(row["avg_speed"]),

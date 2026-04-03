@@ -1,7 +1,9 @@
 "use client";
 
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import { translateStatus } from "@/lib/utils";
 import type { KPICardProps, KPICardStatus } from "@/types";
 
 const STATUS_COLORS: Record<KPICardStatus, string> = {
@@ -39,10 +41,6 @@ function formatAnimatedNumber(current: number, target: number): string {
   return current.toFixed(decimals);
 }
 
-function statusLabel(status: KPICardStatus): string {
-  return status.toUpperCase();
-}
-
 export default function KPICard({
   label,
   value,
@@ -51,6 +49,7 @@ export default function KPICard({
   trend,
   loading = false,
   animate = false,
+  language = "ru",
 }: KPICardProps) {
   const statusColor = STATUS_COLORS[status];
   const critical = isCriticalStatus(status);
@@ -120,11 +119,11 @@ export default function KPICard({
           aria-hidden
         >
           {trend === "up" ? (
-            <span style={{ color: statusColor }}>↑</span>
+            <TrendingUp size={16} style={{ color: statusColor }} strokeWidth={2} />
           ) : trend === "down" ? (
-            <span style={{ color: statusColor }}>↓</span>
+            <TrendingDown size={16} style={{ color: statusColor }} strokeWidth={2} />
           ) : (
-            <span className="text-[#64748b]">→</span>
+            <Minus size={16} className="text-[#64748b]" strokeWidth={2} />
           )}
         </div>
       ) : null}
@@ -153,13 +152,13 @@ export default function KPICard({
           </div>
 
           <span
-            className="inline-block rounded-full px-2 py-0.5 font-[family:var(--font-space-grotesk)] text-[10px] font-semibold uppercase leading-tight"
+            className="inline-block rounded-full px-2 py-0.5 font-[family:var(--font-space-grotesk)] text-[10px] font-semibold leading-tight"
             style={{
               backgroundColor: withAlpha(statusColor, 0.15),
               color: statusColor,
             }}
           >
-            {statusLabel(status)}
+            {translateStatus(status, language)}
           </span>
         </>
       )}

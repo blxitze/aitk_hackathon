@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, Brain, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import type { AIInsightProps, AIResponse } from "@/types";
 
@@ -100,8 +101,14 @@ export default function AIInsight({
       }}
     >
       <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <h2 className="font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[#f1f5f9]">
-          🧠 AI Анализ
+        <h2 className="flex items-center gap-2 font-[family:var(--font-space-grotesk)] text-[16px] font-semibold leading-tight text-[#f1f5f9]">
+          <Brain
+            size={18}
+            className="shrink-0 text-[#8b5cf6]"
+            strokeWidth={2}
+            aria-hidden
+          />
+          ИИ-анализ
         </h2>
         <span
           className="rounded-full px-2.5 py-0.5 font-[family:var(--font-jetbrains-mono)] text-[10px] font-medium"
@@ -123,13 +130,19 @@ export default function AIInsight({
             <div className="h-4 w-[90%] animate-pulse rounded bg-[#0f2040]" />
           </div>
           <p className="mt-6 font-[family:var(--font-space-grotesk)] text-[13px] italic leading-snug text-[#64748b]">
-            AI анализирует данные...
+            Анализирую...
           </p>
         </div>
       ) : error ? (
         <div className="flex flex-1 flex-col">
-          <p className="font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[#ef4444]">
-            ⚠️ Ошибка AI анализа
+          <p className="flex items-start gap-2 font-[family:var(--font-space-grotesk)] text-[15px] font-medium text-[#ef4444]">
+            <AlertCircle
+              size={18}
+              className="mt-0.5 shrink-0 text-[#ef4444]"
+              strokeWidth={2}
+              aria-hidden
+            />
+            Ошибка анализа ИИ
           </p>
           <p className="mt-2 font-[family:var(--font-space-grotesk)] text-[13px] leading-relaxed text-[#64748b]">
             {error}
@@ -160,12 +173,12 @@ export default function AIInsight({
                   className="border-b border-[rgba(255,255,255,0.04)] py-1.5 last:border-b-0"
                 >
                   <div className="flex gap-2 leading-[1.5]">
-                    <span
-                      className="shrink-0 font-[family:var(--font-jetbrains-mono)] text-[14px] text-[#8b5cf6]"
+                    <ChevronRight
+                      size={14}
+                      className="mt-0.5 shrink-0 text-[#8b5cf6]"
+                      strokeWidth={2}
                       aria-hidden
-                    >
-                      →
-                    </span>
+                    />
                     <span className="font-[family:var(--font-space-grotesk)] text-[14px] text-[#f1f5f9]">
                       {action}
                     </span>
@@ -197,7 +210,7 @@ export default function AIInsight({
         </div>
       ) : (
         <p className="font-[family:var(--font-space-grotesk)] text-[13px] text-[#64748b]">
-          Нет данных AI
+          Нет данных ИИ
         </p>
       )}
     </div>

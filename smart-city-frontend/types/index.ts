@@ -72,6 +72,8 @@ export type KPICardStatus =
 
 export type KPICardTrend = "up" | "down" | "stable";
 
+export type UiLanguage = "ru" | "kz";
+
 export interface KPICardProps {
   label: string;
   value: number | string;
@@ -80,22 +82,26 @@ export interface KPICardProps {
   trend?: KPICardTrend;
   loading?: boolean;
   animate?: boolean;
+  language?: UiLanguage;
 }
 
 export interface ScenarioSwitcherProps {
   current: string;
   onChange: (scenario: string) => void;
   disabled?: boolean;
+  language: UiLanguage;
 }
 
 export interface ChartSectionProps {
   chartData: HourlyPoint[];
   currentScenario: string;
+  language?: UiLanguage;
 }
 
 export interface AlertsBlockProps {
   alerts: Alert[];
   loading?: boolean;
+  language?: UiLanguage;
 }
 
 export interface AIInsightProps {
@@ -107,11 +113,9 @@ export interface AIInsightProps {
 
 export type AiMode = "openai" | "ollama";
 
-export type UiLanguage = "ru" | "kz";
-
 export interface HeaderProps {
   aiMode: AiMode;
-  onAiModeChange: (mode: AiMode) => void;
+  onAIModeChange: (mode: AiMode) => void;
   language: UiLanguage;
   onLanguageChange: (lang: UiLanguage) => void;
 }

@@ -116,3 +116,22 @@
   background-size: 200% 100%;
   animation: insight-shimmer 1.5s ease-in-out infinite;
 }
+
+@keyframes livePulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.live-indicator-dot {
+  animation: livePulse 2s ease-in-out infinite;
+}
